@@ -1,16 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  TextInput,
   Alert,
   Platform,
   Dimensions,
+  Keyboard,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapSection from '../../src/components/MapSection';
+import { searchPlaces, SearchResult } from '../../src/services/geocoding';
 import { Pin } from '../../src/types';
 
 const PINS_STORAGE_KEY = 'travel_app_pins';
@@ -25,9 +29,59 @@ export default function MapScreen() {
     longitudeDelta: 5,
   });
 
+  // 검색 관련 상태
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     loadPins();
   }, []);
+
+  // 디바운스 검색
+  const handleSearchChange = useCallback((text: string) => {
+    setSearchQuery(text);
+
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+
+    if (text.trim().length < 2) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+
+    searchTimeout.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const results = await searchPlaces(text);
+        setSearchResults(results);
+        setShowResults(results.length > 0);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500);
+  }, []);
+
+  const handleSelectResult = async (result: SearchResult) => {
+    const newPin: Pin = {
+      id: Date.now().toString(),
+      latitude: result.latitude,
+      longitude: result.longitude,
+      title: result.name,
+    };
+    await savePins([...pins, newPin]);
+
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowResults(false);
+    Keyboard.dismiss();
+  };
 
   const loadPins = async () => {
     try {
@@ -86,6 +140,61 @@ export default function MapScreen() {
         onRemovePin={removePin}
       />
 
+      {/* 검색 바 */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <Text style={styles.searchIcon}>🔍</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="장소, 주소, 도시 검색..."
+            placeholderTextColor="#aaa"
+            value={searchQuery}
+            onChangeText={handleSearchChange}
+            onFocus={() => {
+              if (searchResults.length > 0) setShowResults(true);
+            }}
+            returnKeyType="search"
+          />
+          {isSearching && <ActivityIndicator size="small" color="#1a73e8" style={styles.searchSpinner} />}
+          {searchQuery.length > 0 && !isSearching && (
+            <TouchableOpacity
+              onPress={() => {
+                setSearchQuery('');
+                setSearchResults([]);
+                setShowResults(false);
+              }}
+              style={styles.clearSearch}
+            >
+              <Text style={styles.clearSearchText}>✕</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* 검색 결과 드롭다운 */}
+        {showResults && (
+          <View style={styles.resultsDropdown}>
+            {searchResults.map((result) => (
+              <TouchableOpacity
+                key={result.id}
+                style={styles.resultItem}
+                onPress={() => handleSelectResult(result)}
+              >
+                <Text style={styles.resultIcon}>📍</Text>
+                <View style={styles.resultInfo}>
+                  <Text style={styles.resultName} numberOfLines={1}>
+                    {result.name}
+                  </Text>
+                  <Text style={styles.resultAddress} numberOfLines={1}>
+                    {result.displayName}
+                  </Text>
+                </View>
+                <Text style={styles.resultAdd}>+</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+
       {/* 핀 목록 패널 */}
       <View style={styles.pinPanel}>
         <View style={styles.panelHeader}>
@@ -100,7 +209,7 @@ export default function MapScreen() {
         {pins.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>📍</Text>
-            <Text style={styles.emptyText}>지도를 탭하여 가고 싶은 장소를 추가하세요</Text>
+            <Text style={styles.emptyText}>검색하거나 지도를 탭하여 장소를 추가하세요</Text>
           </View>
         ) : (
           <FlatList
@@ -128,16 +237,77 @@ export default function MapScreen() {
           />
         )}
       </View>
-
-      <View style={styles.badge}>
-        <Text style={styles.badgeText}>지도를 탭하여 핀을 추가하세요</Text>
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  // 검색 바
+  searchContainer: {
+    position: 'absolute',
+    top: 10,
+    left: 12,
+    right: 12,
+    zIndex: 10,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 48,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  searchIcon: { fontSize: 16, marginRight: 8 },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#333',
+    ...(Platform.OS === 'web' ? { outlineStyle: 'none' } : {}),
+  } as any,
+  searchSpinner: { marginLeft: 8 },
+  clearSearch: { marginLeft: 8, padding: 4 },
+  clearSearchText: { fontSize: 16, color: '#aaa', fontWeight: '700' },
+  // 검색 결과
+  resultsDropdown: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginTop: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
+    maxHeight: 280,
+    overflow: 'hidden',
+  },
+  resultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  resultIcon: { fontSize: 18, marginRight: 10 },
+  resultInfo: { flex: 1 },
+  resultName: { fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 2 },
+  resultAddress: { fontSize: 11, color: '#999' },
+  resultAdd: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1a73e8',
+    marginLeft: 8,
+    width: 28,
+    textAlign: 'center',
+  },
+  // 핀 패널
   pinPanel: {
     backgroundColor: '#fff',
     paddingTop: 12,
@@ -188,14 +358,4 @@ const styles = StyleSheet.create({
   pinCoord: { fontSize: 10, color: '#999' },
   removeBtn: { position: 'absolute', top: 8, right: 8 },
   removeBtnText: { fontSize: 14, color: '#ccc', fontWeight: '700' },
-  badge: {
-    position: 'absolute',
-    top: 12,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(26,115,232,0.9)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  badgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
 });
