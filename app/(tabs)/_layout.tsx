@@ -35,8 +35,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="route"
         options={{
-          title: 'AI 경로',
-          headerTitle: 'AI 최적 경로',
+          title: '경로추천',
+          headerTitle: '경로추천',
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>🧭</Text>,
         }}
       />
