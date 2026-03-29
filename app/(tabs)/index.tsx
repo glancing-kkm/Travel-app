@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,59 +10,24 @@ import {
   Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import MapSection from '../../src/components/MapSection';
 import { Pin } from '../../src/types';
 
 const PINS_STORAGE_KEY = 'travel_app_pins';
 const { width } = Dimensions.get('window');
 
-// 플랫폼별 지도 컴포넌트 동적 로드
-let MapView: any = null;
-let Marker: any = null;
-let WebMap: any = null;
-let Location: any = null;
-
-if (Platform.OS !== 'web') {
-  const maps = require('react-native-maps');
-  MapView = maps.default;
-  Marker = maps.Marker;
-  Location = require('expo-location');
-} else {
-  WebMap = require('../../src/components/WebMap').default;
-}
-
 export default function MapScreen() {
   const [pins, setPins] = useState<Pin[]>([]);
-  const [region, setRegion] = useState({
+  const [region] = useState({
     latitude: 37.5665,
     longitude: 126.978,
     latitudeDelta: 5,
     longitudeDelta: 5,
   });
-  const mapRef = useRef<any>(null);
 
   useEffect(() => {
     loadPins();
-    if (Platform.OS !== 'web') {
-      requestLocation();
-    }
   }, []);
-
-  const requestLocation = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        const location = await Location.getCurrentPositionAsync({});
-        setRegion({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          latitudeDelta: 5,
-          longitudeDelta: 5,
-        });
-      }
-    } catch {
-      // 위치 권한 거부 시 기본 위치(서울) 사용
-    }
-  };
 
   const loadPins = async () => {
     try {
@@ -77,25 +42,13 @@ export default function MapScreen() {
   };
 
   const addPin = async (latitude: number, longitude: number) => {
-    let title = `핀 ${pins.length + 1}`;
-
-    if (Platform.OS !== 'web' && Location) {
-      try {
-        const [address] = await Location.reverseGeocodeAsync({ latitude, longitude });
-        if (address) {
-          const parts = [address.city, address.district, address.street].filter(Boolean);
-          title = parts.length > 0 ? parts.join(' ') : `${address.country || ''}`;
-        }
-      } catch {}
-    }
-
+    const title = `핀 ${pins.length + 1}`;
     const newPin: Pin = {
       id: Date.now().toString(),
       latitude,
       longitude,
       title,
     };
-
     await savePins([...pins, newPin]);
   };
 
@@ -124,55 +77,14 @@ export default function MapScreen() {
     }
   };
 
-  const focusPin = (pin: Pin) => {
-    if (Platform.OS !== 'web' && mapRef.current) {
-      mapRef.current.animateToRegion(
-        {
-          latitude: pin.latitude,
-          longitude: pin.longitude,
-          latitudeDelta: 0.5,
-          longitudeDelta: 0.5,
-        },
-        500
-      );
-    }
-  };
-
   return (
     <View style={styles.container}>
-      {/* 지도 영역 */}
-      {Platform.OS === 'web' && WebMap ? (
-        <WebMap
-          initialLatitude={region.latitude}
-          initialLongitude={region.longitude}
-          pins={pins}
-          onMapPress={addPin}
-          onMarkerPress={removePin}
-        />
-      ) : MapView ? (
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          initialRegion={region}
-          onPress={(e: any) => {
-            const { latitude, longitude } = e.nativeEvent.coordinate;
-            addPin(latitude, longitude);
-          }}
-          showsUserLocation
-          showsMyLocationButton
-        >
-          {pins.map((pin, index) => (
-            <Marker
-              key={pin.id}
-              coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
-              title={pin.title}
-              description={`장소 ${index + 1}`}
-              pinColor="#1a73e8"
-              onCalloutPress={() => removePin(pin.id)}
-            />
-          ))}
-        </MapView>
-      ) : null}
+      <MapSection
+        region={region}
+        pins={pins}
+        onAddPin={addPin}
+        onRemovePin={removePin}
+      />
 
       {/* 핀 목록 패널 */}
       <View style={styles.pinPanel}>
@@ -198,7 +110,7 @@ export default function MapScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.pinList}
             renderItem={({ item, index }) => (
-              <TouchableOpacity style={styles.pinCard} onPress={() => focusPin(item)}>
+              <TouchableOpacity style={styles.pinCard} onPress={() => {}}>
                 <View style={styles.pinNumber}>
                   <Text style={styles.pinNumberText}>{index + 1}</Text>
                 </View>
@@ -217,7 +129,6 @@ export default function MapScreen() {
         )}
       </View>
 
-      {/* 안내 배지 */}
       <View style={styles.badge}>
         <Text style={styles.badgeText}>지도를 탭하여 핀을 추가하세요</Text>
       </View>
@@ -227,7 +138,6 @@ export default function MapScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  map: { flex: 1 },
   pinPanel: {
     backgroundColor: '#fff',
     paddingTop: 12,
