@@ -2,584 +2,928 @@
 <html class="light" lang="ko">
 <head>
   <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>TravelApp</title>
-  <link href="https://fonts.googleapis.com" rel="preconnect"/>
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TravelApp – 일정 계획</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet"/>
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
   <script>
     tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "outline": "#797a84",
-            "surface-container-lowest": "#ffffff",
-            "surface": "#faf8fe",
-            "surface-container": "#ededf6",
-            "on-primary": "#f9f8ff",
-            "surface-container-low": "#f4f3fa",
-            "primary-container": "#4e83fe",
-            "surface-container-high": "#e7e7f1",
-            "surface-container-highest": "#e1e2ed",
-            "on-background": "#30323b",
-            "tertiary": "#6c567f",
-            "on-surface-variant": "#5d5f68",
-            "primary-dim": "#004bbc",
-            "primary": "#0f57d0",
-            "on-surface": "#30323b",
-            "secondary-container": "#dce2f9",
-            "outline-variant": "#b0b1bc",
-            "tertiary-container": "#e8cdfd",
-            "primary-fixed": "#4e83fe",
-            "background": "#faf8fe"
-          },
-          fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
-          borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+      theme: { extend: {
+        colors: {
+          primary: "#0f57d0", "primary-container": "#4e83fe", "primary-dim": "#004bbc",
+          surface: "#faf8fe", "surface-container": "#ededf6", "surface-container-low": "#f4f3fa",
+          "surface-container-high": "#e7e7f1", "surface-container-highest": "#e1e2ed",
+          "on-surface": "#30323b", "on-surface-variant": "#5d5f68",
+          outline: "#797a84", "outline-variant": "#b0b1bc",
+          tertiary: "#6c567f", "tertiary-container": "#e8cdfd",
         },
-      },
+        fontFamily: { sans: ["Inter", "sans-serif"] },
+      }},
     }
   </script>
   <style>
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      display: inline-block; line-height: 1; text-transform: none;
-      letter-spacing: normal; word-wrap: normal; white-space: nowrap; direction: ltr;
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #faf8fe; height: 100dvh; overflow: hidden; }
+    .ms { font-family: 'Material Symbols Outlined'; font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+      display:inline-block; line-height:1; text-transform:none; white-space:nowrap; direction:ltr; }
+    .ms-fill { font-variation-settings: 'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+    #map { width:100%; height:100%; }
+    .maplibregl-ctrl-attrib, .maplibregl-ctrl-logo { display:none!important; }
+    .maplibregl-popup-content { border-radius:12px!important; padding:10px 14px!important;
+      font-family:Inter,sans-serif!important; box-shadow:0 8px 24px rgba(15,87,208,0.18)!important; }
+    .maplibregl-popup-tip { display:none!important; }
+    .sheet { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); }
+    .sheet-hidden { transform: translateY(100%); }
+    .overlay { background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .fade-up { animation: fadeUp 0.22s ease-out both; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .spinner { animation: spin 0.8s linear infinite; }
+    .drag-handle { width:36px; height:4px; background:#d1d5db; border-radius:9999px; margin:10px auto; }
+    input[type=range] { accent-color: #0f57d0; }
+    .place-card { transition: transform 0.15s; }
+    .place-card:active { transform: scale(0.98); }
+    .marker-pin {
+      width:32px; height:32px; border-radius:50% 50% 50% 0; transform:rotate(-45deg);
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.25);
     }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    body { min-height: 100dvh; font-family: 'Inter', sans-serif; background: #faf8fe; }
-    #map { width: 100%; height: 100%; }
-    .maplibregl-ctrl-bottom-left, .maplibregl-ctrl-bottom-right { display: none; }
-    .maplibregl-ctrl-top-right { display: none; }
-    .lang-btn.active { background: #0f57d0 !important; color: white !important; }
-    .search-result-item:hover { background: #f4f3fa; }
-    @keyframes fadeSlideUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .anim-in { animation: fadeSlideUp 0.25s ease-out both; }
-    .maplibregl-popup-content {
-      border-radius: 1rem !important;
-      padding: 12px 16px !important;
-      box-shadow: 0 8px 24px rgba(15,87,208,0.15) !important;
-      font-family: 'Inter', sans-serif !important;
-    }
-    .maplibregl-popup-tip { display: none !important; }
+    .marker-num { transform:rotate(45deg); font-size:12px; font-weight:700; color:white; }
+    .tab-indicator { transition: left 0.25s cubic-bezier(0.4,0,0.2,1), width 0.25s; }
+    ::-webkit-scrollbar { width:0; height:0; }
   </style>
 </head>
-<body class="bg-surface font-body text-on-surface antialiased pb-24">
+<body class="text-on-surface select-none">
 
-  <!-- ── Top App Bar ─────────────────────────────── -->
-  <nav class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-[0px_12px_32px_rgba(15,87,208,0.06)] flex items-center justify-between px-6 h-16">
-    <div class="flex items-center gap-3">
-      <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1;">flight_takeoff</span>
-      <h1 class="font-headline text-xl font-bold tracking-tight text-slate-900">TravelApp</h1>
+<!-- ╔═══════════════════════════════════╗ -->
+<!-- ║           MAIN APP                ║ -->
+<!-- ╚═══════════════════════════════════╝ -->
+<div id="app" class="h-dvh flex flex-col overflow-hidden relative">
+
+  <!-- ── Top Header ── -->
+  <header class="shrink-0 bg-white/80 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.06)] z-30 px-5 pt-3 pb-0">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-outline">여행 일정</p>
+        <h1 id="trip-name-display" class="text-xl font-extrabold tracking-tight leading-tight cursor-pointer" onclick="editTripName()">나의 여행 ✏️</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <!-- Date -->
+        <button onclick="document.getElementById('date-input').showPicker()" class="flex items-center gap-1.5 bg-surface-container px-3 py-1.5 rounded-full text-sm font-semibold text-on-surface hover:bg-surface-container-high transition-colors">
+          <span class="ms text-primary" style="font-size:16px;">calendar_today</span>
+          <span id="date-display">오늘</span>
+          <input id="date-input" type="date" class="sr-only" onchange="onDateChange(this.value)"/>
+        </button>
+        <!-- Transport mode -->
+        <button id="transport-btn" onclick="cycleTransport()" class="flex items-center gap-1.5 bg-primary/10 px-3 py-1.5 rounded-full text-sm font-bold text-primary hover:bg-primary/20 transition-colors">
+          <span id="transport-icon" class="ms" style="font-size:16px;">directions_transit</span>
+          <span id="transport-label">대중교통</span>
+        </button>
+      </div>
     </div>
-    <div class="flex items-center gap-2">
-      <!-- Language Selector Button -->
-      <button id="lang-toggle-btn"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface text-sm font-semibold hover:bg-primary/10 transition-colors active:scale-95 duration-150">
-        <span class="material-symbols-outlined text-primary" style="font-size:18px;">translate</span>
-        <span id="lang-label">한국어</span>
+    <!-- Tab bar -->
+    <div class="flex relative">
+      <button onclick="switchTab('timeline')" class="tab-btn flex-1 py-2.5 text-sm font-bold text-center transition-colors" data-tab="timeline">
+        <span class="ms mr-1" style="font-size:15px;">list_alt</span>일정
       </button>
-      <button class="p-2 rounded-full hover:bg-slate-100/50 active:scale-95 duration-200 transition-colors">
-        <span class="material-symbols-outlined text-slate-500">notifications</span>
+      <button onclick="switchTab('map')" class="tab-btn flex-1 py-2.5 text-sm font-bold text-center transition-colors" data-tab="map">
+        <span class="ms mr-1" style="font-size:15px;">map</span>지도
       </button>
+      <div id="tab-indicator" class="tab-indicator absolute bottom-0 h-0.5 bg-primary rounded-full"></div>
     </div>
-  </nav>
+  </header>
 
-  <!-- ── Language Picker Panel (slide-down) ────── -->
-  <div id="lang-panel" class="hidden fixed top-16 right-4 z-50 bg-white rounded-2xl shadow-xl border border-outline-variant/20 overflow-hidden w-52 anim-in">
-    <div class="px-4 py-3 border-b border-outline-variant/10">
-      <p class="text-xs font-bold uppercase tracking-widest text-outline">지도 언어 선택</p>
-    </div>
-    <div id="lang-list" class="py-2"></div>
-  </div>
+  <!-- ── Content Area ── -->
+  <main class="flex-1 overflow-hidden relative">
 
-  <main class="pt-16">
+    <!-- TIMELINE TAB -->
+    <div id="view-timeline" class="absolute inset-0 overflow-y-auto pb-44">
 
-    <!-- ── Map Section ─────────────────────────── -->
-    <section class="relative" style="height: calc(100dvh - 4rem - 5rem);">
-      <div id="map" class="absolute inset-0"></div>
+      <!-- Empty state -->
+      <div id="empty-state" class="flex flex-col items-center justify-center h-full px-8 text-center">
+        <div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+          <span class="ms text-primary" style="font-size:44px;">travel_explore</span>
+        </div>
+        <h2 class="text-xl font-extrabold mb-2">어디로 가시나요?</h2>
+        <p class="text-on-surface-variant text-sm leading-relaxed mb-8">+ 버튼을 눌러 장소를 추가하면<br/>비용, 이동시간, 경로를 자동으로 계산해드려요</p>
+        <button onclick="openAddSheet()" class="bg-primary text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-primary/30 active:scale-95 transition-all">
+          <span class="ms">add_location_alt</span>첫 장소 추가하기
+        </button>
+      </div>
 
-      <!-- Search overlay -->
-      <div class="absolute top-4 left-4 right-4 z-40" id="search-container">
-        <div class="flex items-center gap-3 bg-white/90 backdrop-blur-xl px-4 py-3.5 rounded-2xl shadow-[0px_8px_24px_rgba(15,87,208,0.12)] focus-within:shadow-xl transition-all group">
-          <span class="material-symbols-outlined text-outline group-focus-within:text-primary shrink-0">search</span>
-          <input id="search-input"
-            class="bg-transparent border-none focus:ring-0 p-0 text-on-surface w-full placeholder:text-outline/60 font-medium text-[15px]"
-            placeholder="도시나 장소를 검색하세요..." type="text" autocomplete="off"/>
-          <button id="clear-btn" class="hidden shrink-0 p-1 rounded-full hover:bg-surface-container active:scale-90 transition-all">
-            <span class="material-symbols-outlined text-outline" style="font-size:18px;">close</span>
+      <!-- Timeline content (rendered by JS) -->
+      <div id="timeline-content" class="hidden px-5 pt-4 space-y-0">
+        <!-- Start time row -->
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 bg-surface-container rounded-2xl flex items-center justify-center shrink-0">
+            <span class="ms text-outline" style="font-size:18px;">schedule</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-outline uppercase tracking-wider">출발</span>
+            <button onclick="editStartTime()" class="text-sm font-bold text-primary hover:underline" id="start-time-btn">09:00</button>
+          </div>
+        </div>
+        <div id="timeline-items"></div>
+
+        <!-- Optimize button -->
+        <div class="pt-6 pb-4">
+          <button onclick="optimizeRoute()" class="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/25 active:scale-[0.98] transition-all">
+            <span class="ms">auto_awesome</span>AI 경로 최적화
           </button>
         </div>
-        <!-- Suggestions -->
-        <div id="suggestions" class="hidden mt-2 bg-white rounded-2xl shadow-xl border border-outline-variant/10 overflow-hidden max-h-72 overflow-y-auto anim-in"></div>
       </div>
+    </div>
 
-      <!-- Current language badge on map -->
-      <div class="absolute bottom-4 left-4 z-40">
-        <div class="flex items-center gap-1.5 bg-white/85 backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm text-xs font-bold text-on-surface">
-          <span class="material-symbols-outlined text-primary" style="font-size:14px;">language</span>
-          <span id="map-lang-badge">한국어</span>
-        </div>
+    <!-- MAP TAB -->
+    <div id="view-map" class="absolute inset-0 hidden">
+      <div id="map"></div>
+      <!-- Map hint -->
+      <div class="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-md text-xs font-semibold text-on-surface-variant flex items-center gap-1.5">
+        <span class="ms text-primary" style="font-size:14px;">touch_app</span>
+        지도를 탭해서 장소 추가
       </div>
+      <!-- Map place list (mini) -->
+      <div id="map-place-list" class="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl rounded-t-3xl shadow-2xl max-h-52 overflow-y-auto">
+        <div class="drag-handle"></div>
+        <div id="map-places" class="px-4 pb-4 space-y-2"></div>
+      </div>
+    </div>
 
-      <!-- Zoom controls -->
-      <div class="absolute bottom-4 right-4 z-40 flex flex-col gap-2">
-        <button id="zoom-in" class="w-10 h-10 bg-white/90 backdrop-blur-md rounded-xl shadow-md flex items-center justify-center hover:bg-white active:scale-90 transition-all">
-          <span class="material-symbols-outlined text-on-surface" style="font-size:20px;">add</span>
-        </button>
-        <button id="zoom-out" class="w-10 h-10 bg-white/90 backdrop-blur-md rounded-xl shadow-md flex items-center justify-center hover:bg-white active:scale-90 transition-all">
-          <span class="material-symbols-outlined text-on-surface" style="font-size:20px;">remove</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- ── Popular Destinations ─────────────────── -->
-    <section class="px-6 pt-8 space-y-5">
-      <div class="flex justify-between items-center">
-        <h2 class="font-headline text-xl font-extrabold tracking-tight" id="section-title">인기 여행지</h2>
-        <button class="text-primary text-sm font-semibold hover:underline" id="see-all-btn">모두 보기</button>
-      </div>
-      <div id="cards-container" class="flex gap-5 overflow-x-auto hide-scrollbar -mx-6 px-6 pb-4"></div>
-    </section>
-
-    <!-- ── Category Grid ────────────────────────── -->
-    <section class="px-6 pt-8 pb-8">
-      <h2 class="font-headline text-xl font-extrabold tracking-tight mb-5" id="category-title">체험 카테고리</h2>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-surface-container-low rounded-3xl p-6 flex flex-col justify-between h-36 hover:shadow-md transition-shadow cursor-pointer">
-          <div class="w-11 h-11 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
-            <span class="material-symbols-outlined">restaurant</span>
-          </div>
-          <span class="font-bold text-slate-800 text-sm" id="cat-food">맛집 탐방</span>
-        </div>
-        <div class="bg-primary text-white rounded-3xl p-6 flex flex-col justify-between h-36 hover:shadow-md transition-shadow cursor-pointer">
-          <div class="w-11 h-11 bg-white/20 rounded-2xl flex items-center justify-center shadow-sm">
-            <span class="material-symbols-outlined">hiking</span>
-          </div>
-          <span class="font-bold text-sm" id="cat-hike">하이킹</span>
-        </div>
-        <div class="bg-tertiary-container rounded-3xl p-6 flex flex-col justify-between h-36 hover:shadow-md transition-shadow cursor-pointer">
-          <div class="w-11 h-11 bg-white rounded-2xl flex items-center justify-center text-tertiary shadow-sm">
-            <span class="material-symbols-outlined">photo_camera</span>
-          </div>
-          <span class="font-bold text-slate-800 text-sm" id="cat-photo">사진 명소</span>
-        </div>
-        <div class="bg-surface-container-low rounded-3xl p-6 flex flex-col justify-between h-36 hover:shadow-md transition-shadow cursor-pointer">
-          <div class="w-11 h-11 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
-            <span class="material-symbols-outlined">beach_access</span>
-          </div>
-          <span class="font-bold text-slate-800 text-sm" id="cat-beach">해변 휴양</span>
-        </div>
-      </div>
-    </section>
   </main>
 
-  <!-- ── Bottom Nav ───────────────────────────── -->
-  <nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-2xl rounded-t-[2rem] z-50 shadow-[0_-8px_24px_rgba(15,87,208,0.04)]">
-    <div class="flex flex-col items-center justify-center bg-blue-50 text-blue-700 rounded-2xl px-5 py-2 cursor-pointer">
-      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">home</span>
-      <span class="text-[11px] font-medium tracking-wide uppercase mt-1" id="nav-home">홈</span>
+  <!-- ── Summary Bar ── -->
+  <div id="summary-bar" class="hidden shrink-0 bg-white border-t border-outline-variant/20 px-5 py-3 z-20">
+    <div class="flex items-center justify-around">
+      <div class="text-center">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-outline">장소</p>
+        <p class="text-base font-extrabold text-on-surface" id="sum-places">0개</p>
+      </div>
+      <div class="w-px h-8 bg-outline-variant/30"></div>
+      <div class="text-center">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-outline">소요시간</p>
+        <p class="text-base font-extrabold text-primary" id="sum-time">0시간</p>
+      </div>
+      <div class="w-px h-8 bg-outline-variant/30"></div>
+      <div class="text-center">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-outline">예상비용</p>
+        <p class="text-base font-extrabold text-on-surface" id="sum-cost">₩0</p>
+      </div>
+      <div class="w-px h-8 bg-outline-variant/30"></div>
+      <div class="text-center">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-outline">거리</p>
+        <p class="text-base font-extrabold text-on-surface" id="sum-dist">0km</p>
+      </div>
     </div>
-    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors cursor-pointer">
-      <span class="material-symbols-outlined">explore</span>
-      <span class="text-[11px] font-medium tracking-wide uppercase mt-1" id="nav-explore">탐색</span>
+  </div>
+
+  <!-- ── Bottom Nav ── -->
+  <nav class="shrink-0 flex justify-around items-center px-4 pb-5 pt-2 bg-white/90 backdrop-blur-2xl border-t border-outline-variant/10 z-20">
+    <div class="flex flex-col items-center gap-0.5 text-primary cursor-pointer">
+      <span class="ms ms-fill" style="font-size:22px;">home</span>
+      <span class="text-[10px] font-bold uppercase">홈</span>
     </div>
-    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors cursor-pointer">
-      <span class="material-symbols-outlined">luggage</span>
-      <span class="text-[11px] font-medium tracking-wide uppercase mt-1" id="nav-trip">여행</span>
+    <div class="flex flex-col items-center gap-0.5 text-slate-400 cursor-pointer">
+      <span class="ms" style="font-size:22px;">explore</span>
+      <span class="text-[10px] font-medium uppercase">탐색</span>
     </div>
-    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors cursor-pointer">
-      <span class="material-symbols-outlined">person</span>
-      <span class="text-[11px] font-medium tracking-wide uppercase mt-1" id="nav-profile">프로필</span>
+    <div class="flex flex-col items-center gap-0.5 text-slate-400 cursor-pointer">
+      <span class="ms" style="font-size:22px;">luggage</span>
+      <span class="text-[10px] font-medium uppercase">여행</span>
+    </div>
+    <div class="flex flex-col items-center gap-0.5 text-slate-400 cursor-pointer">
+      <span class="ms" style="font-size:22px;">person</span>
+      <span class="text-[10px] font-medium uppercase">프로필</span>
     </div>
   </nav>
 
-<script>
-// ═══════════════════════════════════════════════
-// 1. Language configuration
-// ═══════════════════════════════════════════════
-const LANGUAGES = [
-  { code: 'ko', label: '한국어',  flag: '🇰🇷', nominatim: 'ko' },
-  { code: 'en', label: 'English', flag: '🇺🇸', nominatim: 'en' },
-  { code: 'ja', label: '日本語',  flag: '🇯🇵', nominatim: 'ja' },
-  { code: 'zh', label: '中文',    flag: '🇨🇳', nominatim: 'zh' },
-  { code: 'fr', label: 'Français',flag: '🇫🇷', nominatim: 'fr' },
-  { code: 'es', label: 'Español', flag: '🇪🇸', nominatim: 'es' },
-  { code: 'de', label: 'Deutsch', flag: '🇩🇪', nominatim: 'de' },
-  { code: 'ru', label: 'Русский', flag: '🇷🇺', nominatim: 'ru' },
-];
+  <!-- FAB -->
+  <button onclick="openAddSheet()" id="fab"
+    class="hidden fixed right-5 bottom-24 w-14 h-14 bg-primary text-white rounded-2xl shadow-xl shadow-primary/40 flex items-center justify-center active:scale-90 transition-all z-30">
+    <span class="ms" style="font-size:28px;">add</span>
+  </button>
 
-// UI text translations
-const UI_TEXT = {
-  ko: { title:'인기 여행지', category:'체험 카테고리', food:'맛집 탐방', hike:'하이킹', photo:'사진 명소', beach:'해변 휴양', placeholder:'도시나 장소를 검색하세요...', seeAll:'모두 보기', home:'홈', explore:'탐색', trip:'여행', profile:'프로필', noResult:'검색 결과 없음', loading:'검색 중...' },
-  en: { title:'Popular Destinations', category:'Experience Categories', food:'Food Tour', hike:'Hiking', photo:'Photo Spots', beach:'Beach Resort', placeholder:'Search cities or places...', seeAll:'See All', home:'Home', explore:'Explore', trip:'Trips', profile:'Profile', noResult:'No results', loading:'Searching...' },
-  ja: { title:'人気の旅行先', category:'体験カテゴリ', food:'グルメ巡り', hike:'ハイキング', photo:'撮影スポット', beach:'ビーチリゾート', placeholder:'都市や場所を検索...', seeAll:'すべて見る', home:'ホーム', explore:'探索', trip:'旅行', profile:'プロフィール', noResult:'結果なし', loading:'検索中...' },
-  zh: { title:'热门目的地', category:'体验类别', food:'美食探索', hike:'徒步旅行', photo:'摄影胜地', beach:'海滩度假', placeholder:'搜索城市或地点...', seeAll:'查看全部', home:'首页', explore:'探索', trip:'旅行', profile:'个人', noResult:'无结果', loading:'搜索中...' },
-  fr: { title:'Destinations populaires', category:'Catégories', food:'Gastronomie', hike:'Randonnée', photo:'Photos', beach:'Plage', placeholder:'Rechercher une ville...', seeAll:'Tout voir', home:'Accueil', explore:'Explorer', trip:'Voyage', profile:'Profil', noResult:'Aucun résultat', loading:'Recherche...' },
-  es: { title:'Destinos populares', category:'Categorías', food:'Gastronomía', hike:'Senderismo', photo:'Fotos', beach:'Playa', placeholder:'Buscar ciudad o lugar...', seeAll:'Ver todo', home:'Inicio', explore:'Explorar', trip:'Viaje', profile:'Perfil', noResult:'Sin resultados', loading:'Buscando...' },
-  de: { title:'Beliebte Reiseziele', category:'Kategorien', food:'Kulinarik', hike:'Wandern', photo:'Fotospots', beach:'Strand', placeholder:'Stadt oder Ort suchen...', seeAll:'Alle sehen', home:'Start', explore:'Erkunden', trip:'Reise', profile:'Profil', noResult:'Keine Ergebnisse', loading:'Suche...' },
-  ru: { title:'Популярные направления', category:'Категории', food:'Гастрономия', hike:'Пешие прогулки', photo:'Фототочки', beach:'Пляж', placeholder:'Поиск города или места...', seeAll:'Все', home:'Главная', explore:'Обзор', trip:'Поездка', profile:'Профиль', noResult:'Нет результатов', loading:'Поиск...' },
-};
+</div>
 
-// ═══════════════════════════════════════════════
-// 2. Destination data
-// ═══════════════════════════════════════════════
-const DESTINATIONS = [
-  { id:1,  name:{ko:'도쿄',en:'Tokyo',ja:'東京',zh:'东京',fr:'Tokyo',es:'Tokio',de:'Tokio',ru:'Токио'}, country:{ko:'일본',en:'Japan',ja:'日本',zh:'日本',fr:'Japon',es:'Japón',de:'Japan',ru:'Япония'}, price:'₩ 650,000~', img:'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=600', lat:35.6762, lng:139.6503 },
-  { id:2,  name:{ko:'파리',en:'Paris',ja:'パリ',zh:'巴黎',fr:'Paris',es:'París',de:'Paris',ru:'Париж'}, country:{ko:'프랑스',en:'France',ja:'フランス',zh:'法国',fr:'France',es:'Francia',de:'Frankreich',ru:'Франция'}, price:'₩ 1,200,000~', img:'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=600', lat:48.8566, lng:2.3522 },
-  { id:3,  name:{ko:'발리',en:'Bali',ja:'バリ',zh:'巴厘岛',fr:'Bali',es:'Bali',de:'Bali',ru:'Бали'}, country:{ko:'인도네시아',en:'Indonesia',ja:'インドネシア',zh:'印度尼西亚',fr:'Indonésie',es:'Indonesia',de:'Indonesien',ru:'Индонезия'}, price:'₩ 780,000~', img:'https://images.unsplash.com/photo-1555993539-1732b0258235?w=600', lat:-8.4095, lng:115.1889 },
-  { id:4,  name:{ko:'두바이',en:'Dubai',ja:'ドバイ',zh:'迪拜',fr:'Dubaï',es:'Dubái',de:'Dubai',ru:'Дубай'}, country:{ko:'UAE',en:'UAE',ja:'UAE',zh:'阿联酋',fr:'ÉAU',es:'EAU',de:'VAE',ru:'ОАЭ'}, price:'₩ 1,050,000~', img:'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=600', lat:25.2048, lng:55.2708 },
-  { id:5,  name:{ko:'뉴욕',en:'New York',ja:'ニューヨーク',zh:'纽约',fr:'New York',es:'Nueva York',de:'New York',ru:'Нью-Йорк'}, country:{ko:'미국',en:'USA',ja:'アメリカ',zh:'美国',fr:'États-Unis',es:'EE.UU.',de:'USA',ru:'США'}, price:'₩ 1,350,000~', img:'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600', lat:40.7128, lng:-74.0060 },
-  { id:6,  name:{ko:'런던',en:'London',ja:'ロンドン',zh:'伦敦',fr:'Londres',es:'Londres',de:'London',ru:'Лондон'}, country:{ko:'영국',en:'UK',ja:'イギリス',zh:'英国',fr:'Royaume-Uni',es:'Reino Unido',de:'Großbritannien',ru:'Великобритания'}, price:'₩ 1,100,000~', img:'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600', lat:51.5074, lng:-0.1278 },
-];
-
-// Fuzzy search aliases (multilingual)
-const ALIASES = {
-  1: ['东京','とうきょう','토쿄','동경','tokio','toquio'],
-  2: ['パリ','빠리','pari','parigi','париж'],
-  3: ['バリ','바리','bali island'],
-  4: ['迪拜','ドバイ','두바히','dubay','дубай'],
-  5: ['纽约','ニューヨーク','뉴요크','nueva york','нью-йорк'],
-  6: ['伦敦','ロンドン','론던','londres','лондон'],
-};
-
-// ═══════════════════════════════════════════════
-// 3. State
-// ═══════════════════════════════════════════════
-let currentLang = 'ko';
-let map = null;
-let currentPopup = null;
-let searchDebounce = null;
-
-// ═══════════════════════════════════════════════
-// 4. MapLibre GL JS map init
-// ═══════════════════════════════════════════════
-function initMap() {
-  map = new maplibregl.Map({
-    container: 'map',
-    style: 'https://tiles.openfreemap.org/styles/liberty',
-    center: [126.9780, 37.5665], // Seoul default
-    zoom: 4,
-    attributionControl: false,
-  });
-
-  map.on('load', () => {
-    setMapLanguage('ko');
-    renderCards();
-    addDestinationMarkers();
-  });
-
-  // Zoom buttons
-  document.getElementById('zoom-in').addEventListener('click', () => map.zoomIn({ duration: 250 }));
-  document.getElementById('zoom-out').addEventListener('click', () => map.zoomOut({ duration: 250 }));
-}
-
-// ═══════════════════════════════════════════════
-// 5. Language switching
-// ═══════════════════════════════════════════════
-function setMapLanguage(langCode) {
-  if (!map || !map.isStyleLoaded()) return;
-  const style = map.getStyle();
-  if (!style) return;
-
-  style.layers.forEach(layer => {
-    if (!layer.layout || !layer.layout['text-field']) return;
-    try {
-      map.setLayoutProperty(layer.id, 'text-field', [
-        'coalesce',
-        ['get', `name:${langCode}`],
-        ['get', 'name'],
-      ]);
-    } catch (e) { /* some layers may not support this */ }
-  });
-}
-
-function applyLanguage(langCode) {
-  currentLang = langCode;
-  const lang = LANGUAGES.find(l => l.code === langCode);
-  const t = UI_TEXT[langCode];
-
-  // Update nav badge & header label
-  document.getElementById('lang-label').textContent = lang.label;
-  document.getElementById('map-lang-badge').textContent = lang.label;
-
-  // Update UI text
-  document.getElementById('section-title').textContent = t.title;
-  document.getElementById('category-title').textContent = t.category;
-  document.getElementById('cat-food').textContent = t.food;
-  document.getElementById('cat-hike').textContent = t.hike;
-  document.getElementById('cat-photo').textContent = t.photo;
-  document.getElementById('cat-beach').textContent = t.beach;
-  document.getElementById('see-all-btn').textContent = t.seeAll;
-  document.getElementById('search-input').placeholder = t.placeholder;
-  document.getElementById('nav-home').textContent = t.home;
-  document.getElementById('nav-explore').textContent = t.explore;
-  document.getElementById('nav-trip').textContent = t.trip;
-  document.getElementById('nav-profile').textContent = t.profile;
-
-  // Highlight active language in panel
-  document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.code === langCode);
-  });
-
-  // Update map labels
-  if (map && map.isStyleLoaded()) setMapLanguage(langCode);
-
-  // Re-render destination cards
-  renderCards();
-  hideLangPanel();
-}
-
-// ═══════════════════════════════════════════════
-// 6. Language panel
-// ═══════════════════════════════════════════════
-function buildLangPanel() {
-  const list = document.getElementById('lang-list');
-  list.innerHTML = LANGUAGES.map(l => `
-    <button class="lang-btn w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-container-low transition-colors text-left text-sm font-medium ${l.code === currentLang ? 'active' : ''}"
-      data-code="${l.code}">
-      <span class="text-lg">${l.flag}</span>
-      <span>${l.label}</span>
-    </button>
-  `).join('');
-  list.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.addEventListener('click', () => applyLanguage(btn.dataset.code));
-  });
-}
-
-function hideLangPanel() {
-  document.getElementById('lang-panel').classList.add('hidden');
-}
-
-document.getElementById('lang-toggle-btn').addEventListener('click', (e) => {
-  e.stopPropagation();
-  const panel = document.getElementById('lang-panel');
-  panel.classList.toggle('hidden');
-  if (!panel.classList.contains('hidden')) panel.classList.add('anim-in');
-});
-
-document.addEventListener('click', (e) => {
-  if (!document.getElementById('lang-panel').contains(e.target) &&
-      e.target !== document.getElementById('lang-toggle-btn')) {
-    hideLangPanel();
-  }
-});
-
-// ═══════════════════════════════════════════════
-// 7. Destination cards
-// ═══════════════════════════════════════════════
-function renderCards() {
-  const container = document.getElementById('cards-container');
-  container.innerHTML = DESTINATIONS.map(d => `
-    <div class="flex-none w-[220px] group cursor-pointer anim-in" onclick="flyToDestination(${d.id})">
-      <div class="relative aspect-[3/4] rounded-[2rem] overflow-hidden shadow-lg">
-        <img alt="${d.name[currentLang]}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="${d.img}"/>
-        <div class="absolute top-3 right-3 bg-white/20 backdrop-blur-xl p-1.5 rounded-full text-white">
-          <span class="material-symbols-outlined" style="font-size:18px;">favorite</span>
-        </div>
-        <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-          <p class="text-[10px] text-white/70 font-bold uppercase tracking-widest">${d.country[currentLang]}</p>
-          <h4 class="font-bold text-white text-base">${d.name[currentLang]}</h4>
-          <span class="text-white/90 text-xs font-semibold">${d.price}</span>
+<!-- ╔═══════════════════════════════════╗ -->
+<!-- ║        ADD PLACE SHEET            ║ -->
+<!-- ╚═══════════════════════════════════╝ -->
+<div id="overlay-add" class="fixed inset-0 z-50 hidden">
+  <div class="overlay absolute inset-0" onclick="closeAddSheet()"></div>
+  <div id="sheet-add" class="sheet sheet-hidden absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl flex flex-col" style="max-height:88dvh">
+    <div class="drag-handle cursor-pointer shrink-0" onclick="closeAddSheet()"></div>
+    <div class="px-5 pb-3 shrink-0">
+      <h2 class="text-lg font-extrabold mb-3">장소 추가</h2>
+      <div class="flex items-center gap-3 bg-surface-container rounded-2xl px-4 py-3 focus-within:bg-white focus-within:shadow-md transition-all">
+        <span class="ms text-outline" style="font-size:20px;">search</span>
+        <input id="add-search-input" type="text" placeholder="장소, 도시, 음식점 검색..."
+          class="flex-1 bg-transparent border-none focus:ring-0 p-0 text-sm font-medium placeholder:text-outline/60"
+          oninput="onAddSearch(this.value)" onkeydown="if(e.key==='Enter')onAddSearch(this.value)"/>
+        <button id="add-search-clear" class="hidden" onclick="clearAddSearch()">
+          <span class="ms text-outline" style="font-size:18px;">close</span>
+        </button>
+      </div>
+    </div>
+    <!-- Search results -->
+    <div id="add-results" class="flex-1 overflow-y-auto px-5 pb-6">
+      <div id="add-loading" class="hidden justify-center py-8">
+        <span class="ms spinner text-primary" style="font-size:28px;">progress_activity</span>
+      </div>
+      <div id="add-list" class="space-y-2"></div>
+      <!-- Recent / popular suggestions -->
+      <div id="add-suggestions">
+        <p class="text-xs font-bold uppercase tracking-wider text-outline mb-3">인기 카테고리로 검색</p>
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="document.getElementById('add-search-input').value='맛집';onAddSearch('맛집')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
+            <span class="ms text-orange-500" style="font-size:22px;">restaurant</span>
+            <span class="text-xs font-semibold">식당</span>
+          </button>
+          <button onclick="document.getElementById('add-search-input').value='카페';onAddSearch('카페')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
+            <span class="ms text-amber-700" style="font-size:22px;">local_cafe</span>
+            <span class="text-xs font-semibold">카페</span>
+          </button>
+          <button onclick="document.getElementById('add-search-input').value='관광명소';onAddSearch('관광명소')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
+            <span class="ms text-primary" style="font-size:22px;">photo_camera</span>
+            <span class="text-xs font-semibold">관광지</span>
+          </button>
+          <button onclick="document.getElementById('add-search-input').value='박물관';onAddSearch('박물관')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
+            <span class="ms text-red-500" style="font-size:22px;">museum</span>
+            <span class="text-xs font-semibold">박물관</span>
+          </button>
+          <button onclick="document.getElementById('add-search-input').value='공원';onAddSearch('공원')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
+            <span class="ms text-green-600" style="font-size:22px;">park</span>
+            <span class="text-xs font-semibold">공원</span>
+          </button>
+          <button onclick="document.getElementById('add-search-input').value='쇼핑몰';onAddSearch('쇼핑몰')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
+            <span class="ms text-purple-500" style="font-size:22px;">shopping_bag</span>
+            <span class="text-xs font-semibold">쇼핑</span>
+          </button>
         </div>
       </div>
     </div>
-  `).join('');
+  </div>
+</div>
+
+<!-- ╔═══════════════════════════════════╗ -->
+<!-- ║       PLACE DETAIL SHEET          ║ -->
+<!-- ╚═══════════════════════════════════╝ -->
+<div id="overlay-detail" class="fixed inset-0 z-60 hidden" style="z-index:60">
+  <div class="overlay absolute inset-0" onclick="closeDetailSheet()"></div>
+  <div id="sheet-detail" class="sheet sheet-hidden absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl" style="max-height:92dvh;overflow-y:auto">
+    <div class="drag-handle cursor-pointer" onclick="closeDetailSheet()"></div>
+    <div class="px-5 pb-8">
+      <!-- Place name -->
+      <div class="mb-5">
+        <p class="text-xs font-bold uppercase tracking-wider text-outline mb-1" id="detail-address">주소</p>
+        <h2 class="text-xl font-extrabold" id="detail-name">장소 이름</h2>
+      </div>
+      <!-- Category -->
+      <div class="mb-5">
+        <p class="text-sm font-bold text-on-surface-variant mb-2">카테고리</p>
+        <div id="detail-categories" class="flex gap-2 flex-wrap"></div>
+      </div>
+      <!-- Duration -->
+      <div class="mb-5">
+        <div class="flex justify-between items-center mb-2">
+          <p class="text-sm font-bold text-on-surface-variant">관람/체류 시간</p>
+          <span class="text-sm font-extrabold text-primary" id="detail-duration-label">60분</span>
+        </div>
+        <input id="detail-duration" type="range" min="15" max="360" step="15" value="60"
+          class="w-full h-2 rounded-full" oninput="updateDurationLabel(this.value)"/>
+        <div class="flex justify-between text-[10px] text-outline mt-1">
+          <span>15분</span><span>1시간</span><span>2시간</span><span>3시간</span><span>6시간</span>
+        </div>
+      </div>
+      <!-- Cost -->
+      <div class="mb-5">
+        <p class="text-sm font-bold text-on-surface-variant mb-2">예상 비용</p>
+        <div class="flex items-center gap-2 bg-surface-container rounded-2xl px-4 py-3">
+          <span class="text-on-surface-variant font-bold">₩</span>
+          <input id="detail-cost" type="number" placeholder="0" min="0" step="1000"
+            class="flex-1 bg-transparent border-none focus:ring-0 p-0 text-base font-bold text-on-surface placeholder:text-outline/40"/>
+        </div>
+        <!-- Cost presets -->
+        <div class="flex gap-2 mt-2 flex-wrap">
+          <button onclick="setCost(0)"     class="cost-preset px-3 py-1 bg-surface-container rounded-full text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors">무료</button>
+          <button onclick="setCost(5000)"  class="cost-preset px-3 py-1 bg-surface-container rounded-full text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors">₩5,000</button>
+          <button onclick="setCost(10000)" class="cost-preset px-3 py-1 bg-surface-container rounded-full text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors">₩10,000</button>
+          <button onclick="setCost(20000)" class="cost-preset px-3 py-1 bg-surface-container rounded-full text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors">₩20,000</button>
+          <button onclick="setCost(50000)" class="cost-preset px-3 py-1 bg-surface-container rounded-full text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors">₩50,000</button>
+        </div>
+      </div>
+      <!-- Note -->
+      <div class="mb-6">
+        <p class="text-sm font-bold text-on-surface-variant mb-2">메모</p>
+        <textarea id="detail-note" placeholder="예약 번호, 입장 시간, 준비물 등..."
+          class="w-full bg-surface-container rounded-2xl px-4 py-3 text-sm border-none focus:ring-primary/30 focus:ring-2 resize-none" rows="2"></textarea>
+      </div>
+      <!-- Confirm button -->
+      <button onclick="confirmPlace()" class="w-full py-4 bg-primary text-white rounded-2xl font-extrabold text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-[0.98] transition-all">
+        <span class="ms">check_circle</span>일정에 추가
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ╔═══════════════════════════════════╗ -->
+<!-- ║         TOAST                     ║ -->
+<!-- ╚═══════════════════════════════════╝ -->
+<div id="toast" class="fixed top-24 left-1/2 -translate-x-1/2 z-[100] hidden">
+  <div class="bg-slate-900 text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-xl flex items-center gap-2 fade-up">
+    <span id="toast-icon" class="ms" style="font-size:18px;">check_circle</span>
+    <span id="toast-msg"></span>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  CONSTANTS
+// ════════════════════════════════════════════
+const CATS = {
+  '관광지': { icon:'photo_camera',    color:'#0f57d0', bg:'#e8f0fe', defaultCost:15000, defaultDur:90  },
+  '식당':   { icon:'restaurant',      color:'#e67e22', bg:'#fef3e2', defaultCost:30000, defaultDur:60  },
+  '카페':   { icon:'local_cafe',      color:'#6f4e37', bg:'#f5ece8', defaultCost:10000, defaultDur:45  },
+  '쇼핑':   { icon:'shopping_bag',    color:'#8e44ad', bg:'#f4e6fd', defaultCost:50000, defaultDur:60  },
+  '박물관': { icon:'museum',          color:'#c0392b', bg:'#fde8e8', defaultCost:10000, defaultDur:120 },
+  '공원':   { icon:'park',            color:'#16a085', bg:'#e0f5f2', defaultCost:0,     defaultDur:60  },
+  '숙소':   { icon:'hotel',           color:'#2980b9', bg:'#e3f0fa', defaultCost:100000,defaultDur:0   },
+  '기타':   { icon:'place',           color:'#7f8c8d', bg:'#f0f0f0', defaultCost:0,     defaultDur:60  },
+};
+
+const TRANSPORT_MODES = [
+  { id:'transit', label:'대중교통', icon:'directions_transit', speed:22 },
+  { id:'walk',    label:'도보',     icon:'directions_walk',    speed:4.5 },
+  { id:'car',     label:'자동차',   icon:'directions_car',     speed:30 },
+  { id:'taxi',    label:'택시',     icon:'local_taxi',         speed:28 },
+];
+
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+const state = {
+  places: [],       // { id, name, address, lat, lng, category, duration, cost, note }
+  date: new Date().toISOString().slice(0,10),
+  startTime: '09:00',
+  transportIdx: 0,
+  tripName: '나의 여행',
+  currentTab: 'timeline',
+};
+
+let pendingPlace = null;   // place being configured in detail sheet
+let map = null;
+let markers = [];
+let routeLayer = null;
+let searchDebounce = null;
+let toastTimer = null;
+
+// ════════════════════════════════════════════
+//  UTILITY
+// ════════════════════════════════════════════
+function haversine(lat1,lon1,lat2,lon2) {
+  const R=6371, d2r=Math.PI/180;
+  const dLat=(lat2-lat1)*d2r, dLon=(lon2-lon1)*d2r;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*d2r)*Math.cos(lat2*d2r)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
 
-function flyToDestination(id) {
-  const d = DESTINATIONS.find(x => x.id === id);
-  if (!d || !map) return;
-  map.flyTo({ center: [d.lng, d.lat], zoom: 11, duration: 1800, essential: true });
-  showPopup(d.lng, d.lat, d.name[currentLang], d.country[currentLang]);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+function timeToMin(t) {
+  const [h,m]=t.split(':').map(Number); return h*60+m;
+}
+function minToTime(m) {
+  const h=Math.floor(m/60)%24, min=m%60;
+  return `${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
+}
+function fmtDur(min) {
+  if(min<60) return `${min}분`;
+  const h=Math.floor(min/60), m=min%60;
+  return m>0 ? `${h}시간 ${m}분` : `${h}시간`;
+}
+function fmtCost(n) {
+  if(n===0) return '무료';
+  return '₩'+n.toLocaleString();
+}
+function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+function showToast(msg, icon='check_circle') {
+  clearTimeout(toastTimer);
+  const el=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  document.getElementById('toast-icon').textContent=icon;
+  el.classList.remove('hidden');
+  toastTimer=setTimeout(()=>el.classList.add('hidden'),2500);
 }
 
-// ═══════════════════════════════════════════════
-// 8. Destination markers on map
-// ═══════════════════════════════════════════════
-function addDestinationMarkers() {
-  DESTINATIONS.forEach(d => {
-    const el = document.createElement('div');
-    el.className = 'cursor-pointer';
-    el.innerHTML = `
-      <div class="bg-primary text-white px-2 py-1 rounded-lg text-xs font-bold shadow-lg hover:scale-110 transition-transform whitespace-nowrap" style="font-family:Inter,sans-serif;">
-        ✈ ${d.name[currentLang]}
-      </div>`;
+// ════════════════════════════════════════════
+//  DATE & TRANSPORT
+// ════════════════════════════════════════════
+function onDateChange(val) {
+  state.date = val;
+  const d=new Date(val);
+  const today=new Date(); today.setHours(0,0,0,0);
+  const sel=new Date(val); sel.setHours(0,0,0,0);
+  const diff=Math.round((sel-today)/(1000*60*60*24));
+  document.getElementById('date-display').textContent =
+    diff===0?'오늘':diff===1?'내일':diff===-1?'어제':
+    `${d.getMonth()+1}/${d.getDate()}`;
+}
 
-    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
-      .setLngLat([d.lng, d.lat])
-      .addTo(map);
+function cycleTransport() {
+  state.transportIdx=(state.transportIdx+1)%TRANSPORT_MODES.length;
+  const t=TRANSPORT_MODES[state.transportIdx];
+  document.getElementById('transport-icon').textContent=t.icon;
+  document.getElementById('transport-label').textContent=t.label;
+  renderTimeline();
+}
 
-    el.addEventListener('click', () => flyToDestination(d.id));
+function editTripName() {
+  const name=prompt('여행 이름을 입력하세요', state.tripName);
+  if(name?.trim()) { state.tripName=name.trim(); document.getElementById('trip-name-display').textContent=state.tripName+' ✏️'; }
+}
+
+// ════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════
+function switchTab(tab) {
+  state.currentTab = tab;
+  document.getElementById('view-timeline').classList.toggle('hidden', tab!=='timeline');
+  document.getElementById('view-map').classList.toggle('hidden', tab!=='map');
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    const active=b.dataset.tab===tab;
+    b.style.color=active?'#0f57d0':'#9ca3af';
+    b.style.fontWeight=active?'800':'600';
   });
+  const ind=document.getElementById('tab-indicator');
+  if(tab==='timeline'){ ind.style.left='0'; ind.style.width='50%'; }
+  else { ind.style.left='50%'; ind.style.width='50%'; }
+  if(tab==='map') { setTimeout(()=>{if(map)map.resize();},100); updateMapView(); }
 }
 
-// ═══════════════════════════════════════════════
-// 9. Popup
-// ═══════════════════════════════════════════════
-function showPopup(lng, lat, name, country) {
-  if (currentPopup) currentPopup.remove();
-  currentPopup = new maplibregl.Popup({ closeButton: true, offset: 12 })
-    .setLngLat([lng, lat])
-    .setHTML(`
-      <div style="font-family:Inter,sans-serif;">
-        <p style="font-size:10px;color:#797a84;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 2px;">${country}</p>
-        <p style="font-size:16px;font-weight:800;color:#0f57d0;margin:0;">${name}</p>
-      </div>`)
-    .addTo(map);
-}
-
-// ═══════════════════════════════════════════════
-// 10. Levenshtein fuzzy search (for local data)
-// ═══════════════════════════════════════════════
-function levenshtein(a, b) {
-  const m = a.length, n = b.length;
-  const dp = Array.from({length:m+1}, (_,i) => Array.from({length:n+1}, (_,j) => i===0?j:j===0?i:0));
-  for (let i=1;i<=m;i++) for(let j=1;j<=n;j++)
-    dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
-  return dp[m][n];
-}
-
-function localSearch(q) {
-  const lq = q.toLowerCase().trim();
-  return DESTINATIONS.map(d => {
-    const fields = [
-      ...Object.values(d.name).map(v=>v.toLowerCase()),
-      ...Object.values(d.country).map(v=>v.toLowerCase()),
-      ...(ALIASES[d.id]||[]).map(v=>v.toLowerCase()),
-    ];
-    let best = Infinity;
-    for (const f of fields) {
-      if (f===lq) { best=0; break; }
-      if (f.startsWith(lq)||lq.startsWith(f)) { best=Math.min(best,1); continue; }
-      if (f.includes(lq)||lq.includes(f)) { best=Math.min(best,2); continue; }
-      const d2 = levenshtein(lq,f);
-      if (d2 <= Math.max(lq.length,f.length)*0.45) best=Math.min(best,4+d2/Math.max(lq.length,f.length));
+// ════════════════════════════════════════════
+//  TIMELINE CALCULATION & RENDER
+// ════════════════════════════════════════════
+function calcTimeline() {
+  const speed = TRANSPORT_MODES[state.transportIdx].speed;
+  let cur = timeToMin(state.startTime);
+  const items = [];
+  for(let i=0;i<state.places.length;i++) {
+    const p=state.places[i];
+    let travel=0, dist=0;
+    if(i>0) {
+      const prev=state.places[i-1];
+      dist=haversine(prev.lat,prev.lng,p.lat,p.lng);
+      travel=Math.max(5,Math.round(dist/speed*60));
+      cur+=travel;
     }
-    return { dest:d, score:best };
-  }).filter(x=>x.score<Infinity).sort((a,b)=>a.score-b.score).map(x=>x.dest);
+    const arrive=cur;
+    cur+=p.duration;
+    items.push({ place:p, arrive:minToTime(arrive), leave:minToTime(cur), travelMin:travel, distKm:dist });
+  }
+  return items;
 }
 
-// ═══════════════════════════════════════════════
-// 11. Nominatim geocoding search
-// ═══════════════════════════════════════════════
+function renderTimeline() {
+  const places=state.places;
+  const empty=document.getElementById('empty-state');
+  const content=document.getElementById('timeline-content');
+  const fab=document.getElementById('fab');
+  const summaryBar=document.getElementById('summary-bar');
+
+  if(places.length===0) {
+    empty.classList.remove('hidden');
+    content.classList.add('hidden');
+    fab.classList.add('hidden');
+    summaryBar.classList.add('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  content.classList.remove('hidden');
+  fab.classList.remove('hidden');
+  summaryBar.classList.remove('hidden');
+
+  document.getElementById('start-time-btn').textContent=state.startTime;
+  const timeline=calcTimeline();
+  const tMode=TRANSPORT_MODES[state.transportIdx];
+
+  let totalCost=0, totalMin=0, totalDist=0;
+  places.forEach(p=>{ totalCost+=p.cost; totalMin+=p.duration; });
+  timeline.forEach(t=>{ totalDist+=t.distKm; totalMin+=t.travelMin; });
+
+  document.getElementById('sum-places').textContent=places.length+'개';
+  document.getElementById('sum-time').textContent=fmtDur(totalMin);
+  document.getElementById('sum-cost').textContent=fmtCost(totalCost);
+  document.getElementById('sum-dist').textContent=totalDist.toFixed(1)+'km';
+
+  const container=document.getElementById('timeline-items');
+  container.innerHTML=timeline.map((item,i)=>{
+    const p=item.place;
+    const cat=CATS[p.category]||CATS['기타'];
+    return `
+    ${i>0?`
+    <!-- Travel connector -->
+    <div class="flex items-center gap-3 my-1 pl-3">
+      <div class="flex flex-col items-center">
+        <div class="w-0.5 bg-gradient-to-b from-outline-variant/30 to-primary/30 h-4 rounded"></div>
+        <div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+          <span class="ms text-outline" style="font-size:14px;">${tMode.icon}</span>
+        </div>
+        <div class="w-0.5 bg-gradient-to-b from-primary/30 to-outline-variant/30 h-4 rounded"></div>
+      </div>
+      <div class="text-xs text-outline font-semibold">
+        ${fmtDur(item.travelMin)} · ${item.distKm.toFixed(1)}km
+      </div>
+    </div>`:''}
+    <!-- Place card -->
+    <div class="place-card bg-white rounded-3xl p-4 shadow-[0_4px_20px_rgba(15,87,208,0.06)] border border-outline-variant/10 mb-0 fade-up relative group">
+      <div class="flex gap-3">
+        <!-- Order number + icon -->
+        <div class="shrink-0 flex flex-col items-center gap-1">
+          <div class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:${cat.bg}">
+            <span class="ms" style="color:${cat.color};font-size:20px;">${cat.icon}</span>
+          </div>
+          <span class="text-[10px] font-black text-outline">${i+1}</span>
+        </div>
+        <!-- Content -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color:${cat.color}">${p.category}</p>
+              <h3 class="font-extrabold text-base leading-tight truncate">${p.name}</h3>
+              ${p.address?`<p class="text-xs text-outline mt-0.5 truncate">${p.address}</p>`:''}
+            </div>
+            <div class="text-right shrink-0">
+              <p class="text-sm font-extrabold text-primary">${item.arrive}</p>
+              <p class="text-[10px] text-outline">~ ${item.leave}</p>
+            </div>
+          </div>
+          <!-- Tags -->
+          <div class="flex gap-2 mt-2.5 flex-wrap">
+            <span class="flex items-center gap-1 bg-surface-container px-2.5 py-1 rounded-full text-xs font-bold">
+              <span class="ms text-outline" style="font-size:12px;">schedule</span>${fmtDur(p.duration)}
+            </span>
+            <span class="flex items-center gap-1 bg-surface-container px-2.5 py-1 rounded-full text-xs font-bold">
+              <span class="ms text-outline" style="font-size:12px;">payments</span>${fmtCost(p.cost)}
+            </span>
+            ${p.note?`<span class="flex items-center gap-1 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full text-xs font-bold max-w-[120px] truncate">
+              <span class="ms" style="font-size:12px;">sticky_note_2</span>${p.note}</span>`:''}
+          </div>
+        </div>
+      </div>
+      <!-- Action buttons (visible on hover/long press) -->
+      <div class="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button onclick="editPlace('${p.id}')" class="w-7 h-7 bg-surface-container rounded-full flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-colors">
+          <span class="ms" style="font-size:14px;">edit</span>
+        </button>
+        <button onclick="deletePlace('${p.id}')" class="w-7 h-7 bg-surface-container rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-colors">
+          <span class="ms" style="font-size:14px;">delete</span>
+        </button>
+        ${i>0?`<button onclick="movePlace('${p.id}',-1)" class="w-7 h-7 bg-surface-container rounded-full flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-colors">
+          <span class="ms" style="font-size:14px;">arrow_upward</span>
+        </button>`:''}
+        ${i<state.places.length-1?`<button onclick="movePlace('${p.id}',1)" class="w-7 h-7 bg-surface-container rounded-full flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-colors">
+          <span class="ms" style="font-size:14px;">arrow_downward</span>
+        </button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════
+//  PLACE ACTIONS
+// ════════════════════════════════════════════
+function deletePlace(id) {
+  state.places=state.places.filter(p=>p.id!==id);
+  renderTimeline();
+  updateMapView();
+  showToast('장소를 삭제했어요', 'delete');
+}
+
+function movePlace(id, dir) {
+  const idx=state.places.findIndex(p=>p.id===id);
+  const newIdx=idx+dir;
+  if(newIdx<0||newIdx>=state.places.length) return;
+  [state.places[idx],state.places[newIdx]]=[state.places[newIdx],state.places[idx]];
+  renderTimeline();
+  updateMapView();
+}
+
+function editPlace(id) {
+  const p=state.places.find(x=>x.id===id);
+  if(!p) return;
+  pendingPlace={...p, editing:true};
+  openDetailSheet(p);
+}
+
+function editStartTime() {
+  const t=prompt('출발 시간 (HH:MM)', state.startTime);
+  if(t&&/^\d{2}:\d{2}$/.test(t)) { state.startTime=t; renderTimeline(); }
+}
+
+// ════════════════════════════════════════════
+//  ROUTE OPTIMIZATION
+// ════════════════════════════════════════════
+function optimizeRoute() {
+  if(state.places.length<3) { showToast('3개 이상의 장소가 필요해요', 'info'); return; }
+  const orig=[...state.places];
+  const result=[orig.shift()];
+  while(orig.length) {
+    const last=result[result.length-1];
+    let best=0, bestD=Infinity;
+    orig.forEach((p,i)=>{
+      const d=haversine(last.lat,last.lng,p.lat,p.lng);
+      if(d<bestD){bestD=d;best=i;}
+    });
+    result.push(orig.splice(best,1)[0]);
+  }
+  state.places=result;
+  renderTimeline();
+  updateMapView();
+  showToast('✨ 경로를 최적화했어요!', 'auto_awesome');
+}
+
+// ════════════════════════════════════════════
+//  ADD PLACE SHEET
+// ════════════════════════════════════════════
+function openAddSheet() {
+  document.getElementById('overlay-add').classList.remove('hidden');
+  requestAnimationFrame(()=>document.getElementById('sheet-add').classList.remove('sheet-hidden'));
+  setTimeout(()=>document.getElementById('add-search-input').focus(),400);
+}
+
+function closeAddSheet() {
+  document.getElementById('sheet-add').classList.add('sheet-hidden');
+  setTimeout(()=>{
+    document.getElementById('overlay-add').classList.add('hidden');
+    document.getElementById('add-search-input').value='';
+    document.getElementById('add-search-clear').classList.add('hidden');
+    document.getElementById('add-list').innerHTML='';
+    document.getElementById('add-suggestions').classList.remove('hidden');
+  },350);
+}
+
+function clearAddSearch() {
+  document.getElementById('add-search-input').value='';
+  document.getElementById('add-search-clear').classList.add('hidden');
+  document.getElementById('add-list').innerHTML='';
+  document.getElementById('add-suggestions').classList.remove('hidden');
+  document.getElementById('add-search-input').focus();
+}
+
+function onAddSearch(q) {
+  clearTimeout(searchDebounce);
+  const clearBtn=document.getElementById('add-search-clear');
+  clearBtn.classList.toggle('hidden',q.length===0);
+  document.getElementById('add-suggestions').classList.toggle('hidden',q.length>0);
+  if(q.length<2) { document.getElementById('add-list').innerHTML=''; return; }
+
+  showAddLoading(true);
+  searchDebounce=setTimeout(async()=>{
+    const results=await nominatimSearch(q);
+    showAddLoading(false);
+    renderAddResults(results);
+  },400);
+}
+
 async function nominatimSearch(q) {
-  const lang = LANGUAGES.find(l=>l.code===currentLang)?.nominatim || 'en';
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&accept-language=${lang}&addressdetails=1`;
   try {
-    const res = await fetch(url, { headers: { 'Accept-Language': lang } });
-    return await res.json();
+    const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=8&accept-language=ko&addressdetails=1`;
+    const r=await fetch(url,{headers:{'Accept-Language':'ko'}});
+    return await r.json();
   } catch { return []; }
 }
 
-// ═══════════════════════════════════════════════
-// 12. Search UI
-// ═══════════════════════════════════════════════
-const searchInput = document.getElementById('search-input');
-const suggestionsEl = document.getElementById('suggestions');
-const clearBtn = document.getElementById('clear-btn');
+function showAddLoading(show) {
+  document.getElementById('add-loading').classList.toggle('hidden',!show);
+  document.getElementById('add-loading').style.display=show?'flex':'none';
+}
 
-searchInput.addEventListener('input', () => {
-  const q = searchInput.value.trim();
-  clearBtn.classList.toggle('hidden', q.length === 0);
-  if (q.length === 0) { suggestionsEl.classList.add('hidden'); return; }
-  clearTimeout(searchDebounce);
-  // Show local results immediately
-  const localResults = localSearch(q);
-  renderSuggestions(localResults.map(d => ({
-    display: d.name[currentLang],
-    sub: d.country[currentLang],
-    lat: d.lat, lng: d.lng,
-    isLocal: true,
-  })), UI_TEXT[currentLang].loading);
+function guessCategory(result) {
+  const t=(result.type||'').toLowerCase();
+  const cls=(result.class||'').toLowerCase();
+  const name=(result.display_name||'').toLowerCase();
+  if(['restaurant','food','cafe','bar','fast_food','bakery'].some(x=>t.includes(x)||name.includes(x))) return name.includes('카페')||name.includes('coffee')?'카페':'식당';
+  if(['museum','gallery','art'].some(x=>t.includes(x)||name.includes(x))) return '박물관';
+  if(['hotel','hostel','motel','guesthouse'].some(x=>t.includes(x)||name.includes(x))) return '숙소';
+  if(['park','garden','forest','recreation'].some(x=>t.includes(x)||name.includes(x))) return '공원';
+  if(['shop','mall','market','store','supermarket'].some(x=>t.includes(x)||name.includes(x))) return '쇼핑';
+  if(cls==='tourism'||cls==='leisure') return '관광지';
+  return '기타';
+}
 
-  // Then enrich with Nominatim
-  searchDebounce = setTimeout(async () => {
-    const geoResults = await nominatimSearch(q);
-    const items = geoResults.map(r => ({
-      display: r.display_name.split(',')[0],
-      sub: r.display_name.split(',').slice(1,3).join(',').trim(),
-      lat: parseFloat(r.lat),
-      lng: parseFloat(r.lon),
-      isLocal: false,
-    }));
-    // Merge: local first, then geo (deduplicate by proximity)
-    const merged = [...localResults.map(d => ({
-      display: d.name[currentLang], sub: d.country[currentLang],
-      lat: d.lat, lng: d.lng, isLocal: true,
-    }))];
-    items.forEach(item => {
-      const dupe = merged.some(m => Math.abs(m.lat-item.lat)<0.5 && Math.abs(m.lng-item.lng)<0.5);
-      if (!dupe) merged.push(item);
-    });
-    renderSuggestions(merged.slice(0,8), null);
-  }, 400);
-});
-
-function renderSuggestions(items, loadingMsg) {
-  if (items.length === 0 && !loadingMsg) {
-    suggestionsEl.innerHTML = `<div class="px-4 py-3 text-sm text-outline text-center">${UI_TEXT[currentLang].noResult}</div>`;
-    suggestionsEl.classList.remove('hidden');
+function renderAddResults(results) {
+  const list=document.getElementById('add-list');
+  if(!results.length) {
+    list.innerHTML=`<div class="text-center py-8 text-outline text-sm">검색 결과가 없어요.<br/>다른 키워드로 검색해 보세요.</div>`;
     return;
   }
-  let html = items.map((item, i) => `
-    <div class="search-result-item flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors border-b border-outline-variant/5 last:border-0"
-         data-lat="${item.lat}" data-lng="${item.lng}" data-name="${item.display}">
-      <span class="material-symbols-outlined text-primary shrink-0" style="font-size:18px;">${item.isLocal ? 'travel_explore' : 'location_on'}</span>
-      <div class="flex-1 min-w-0">
-        <p class="font-semibold text-on-surface text-sm truncate">${item.display}</p>
-        ${item.sub ? `<p class="text-xs text-outline truncate">${item.sub}</p>` : ''}
+  list.innerHTML=results.map((r,i)=>{
+    const cat=guessCategory(r);
+    const c=CATS[cat];
+    const mainName=r.display_name.split(',')[0];
+    const subAddr=r.display_name.split(',').slice(1,3).join(', ').trim();
+    return `<div class="add-result-item flex items-center gap-3 p-3 rounded-2xl hover:bg-surface-container-low active:bg-surface-container transition-colors cursor-pointer fade-up" style="animation-delay:${i*30}ms"
+      onclick='selectAddResult(${JSON.stringify({name:mainName,address:subAddr,lat:parseFloat(r.lat),lng:parseFloat(r.lon),category:cat}).replace(/'/g,"&#39;")})'>
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:${c.bg}">
+        <span class="ms" style="color:${c.color};font-size:20px;">${c.icon}</span>
       </div>
-    </div>`).join('');
-  if (loadingMsg) html += `<div class="px-4 py-2 text-xs text-outline text-center">${loadingMsg}</div>`;
-  suggestionsEl.innerHTML = html;
-  suggestionsEl.classList.remove('hidden');
-  suggestionsEl.classList.add('anim-in');
+      <div class="flex-1 min-w-0">
+        <p class="font-bold text-sm truncate">${mainName}</p>
+        <p class="text-xs text-outline truncate">${subAddr}</p>
+      </div>
+      <span class="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style="background:${c.bg};color:${c.color}">${cat}</span>
+    </div>`;
+  }).join('');
+}
 
-  suggestionsEl.querySelectorAll('.search-result-item').forEach(el => {
-    el.addEventListener('click', () => {
-      const lat = parseFloat(el.dataset.lat);
-      const lng = parseFloat(el.dataset.lng);
-      const name = el.dataset.name;
-      map.flyTo({ center: [lng, lat], zoom: 12, duration: 1800, essential: true });
-      showPopup(lng, lat, name, '');
-      searchInput.value = name;
-      suggestionsEl.classList.add('hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+function selectAddResult(place) {
+  pendingPlace={...place, id:uid(), editing:false};
+  closeAddSheet();
+  setTimeout(()=>openDetailSheet(place),380);
+}
+
+// ════════════════════════════════════════════
+//  DETAIL SHEET
+// ════════════════════════════════════════════
+function openDetailSheet(place) {
+  const cat=place.category||'기타';
+  const c=CATS[cat];
+  document.getElementById('detail-name').textContent=place.name;
+  document.getElementById('detail-address').textContent=place.address||'';
+  // Duration
+  const dur=place.duration||c.defaultDur;
+  document.getElementById('detail-duration').value=dur;
+  document.getElementById('detail-duration-label').textContent=fmtDur(dur);
+  // Cost
+  document.getElementById('detail-cost').value=place.cost!=null?place.cost:c.defaultCost;
+  // Note
+  document.getElementById('detail-note').value=place.note||'';
+  // Category buttons
+  const catEl=document.getElementById('detail-categories');
+  catEl.innerHTML=Object.keys(CATS).map(k=>`
+    <button onclick="selectCategory('${k}')" data-cat="${k}"
+      class="cat-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${k===cat?'border-primary text-primary bg-primary/5':'border-transparent bg-surface-container text-on-surface-variant'}">
+      <span class="ms" style="font-size:14px;color:${CATS[k].color}">${CATS[k].icon}</span>${k}
+    </button>`).join('');
+
+  document.getElementById('overlay-detail').classList.remove('hidden');
+  requestAnimationFrame(()=>document.getElementById('sheet-detail').classList.remove('sheet-hidden'));
+}
+
+function closeDetailSheet() {
+  document.getElementById('sheet-detail').classList.add('sheet-hidden');
+  setTimeout(()=>document.getElementById('overlay-detail').classList.add('hidden'),350);
+  pendingPlace=null;
+}
+
+function selectCategory(cat) {
+  if(!pendingPlace) return;
+  pendingPlace.category=cat;
+  const c=CATS[cat];
+  // Update cost/duration to category defaults if user hasn't changed
+  document.getElementById('detail-duration').value=c.defaultDur;
+  document.getElementById('detail-duration-label').textContent=fmtDur(c.defaultDur);
+  document.getElementById('detail-cost').value=c.defaultCost;
+  document.querySelectorAll('.cat-btn').forEach(b=>{
+    const active=b.dataset.cat===cat;
+    b.className=b.className.replace(/border-\S+|text-\S+|bg-\S+/g,'').trim();
+    b.classList.add(active?'border-primary':'border-transparent',
+      active?'text-primary':'text-on-surface-variant',
+      active?'bg-primary/5':'bg-surface-container','border-2','transition-all');
+  });
+}
+
+function updateDurationLabel(val) {
+  document.getElementById('detail-duration-label').textContent=fmtDur(parseInt(val));
+}
+function setCost(val) { document.getElementById('detail-cost').value=val; }
+
+function confirmPlace() {
+  if(!pendingPlace) return;
+  pendingPlace.category=document.querySelector('.cat-btn.border-primary')?.dataset.cat||pendingPlace.category||'기타';
+  pendingPlace.duration=parseInt(document.getElementById('detail-duration').value)||60;
+  pendingPlace.cost=parseInt(document.getElementById('detail-cost').value)||0;
+  pendingPlace.note=document.getElementById('detail-note').value.trim();
+
+  if(pendingPlace.editing) {
+    const idx=state.places.findIndex(p=>p.id===pendingPlace.id);
+    if(idx>=0) state.places[idx]={...pendingPlace};
+  } else {
+    state.places.push({...pendingPlace});
+  }
+
+  closeDetailSheet();
+  renderTimeline();
+  updateMapView();
+  if(state.currentTab==='map') switchTab('map');
+  showToast(`📍 ${pendingPlace.name} 추가됨`, 'check_circle');
+}
+
+// ════════════════════════════════════════════
+//  MAP
+// ════════════════════════════════════════════
+function initMap() {
+  map=new maplibregl.Map({
+    container:'map',
+    style:'https://tiles.openfreemap.org/styles/liberty',
+    center:[126.978,37.566],
+    zoom:5,
+    attributionControl:false,
+  });
+  map.on('load',()=>{
+    // Tap on map to add place
+    map.on('click',async(e)=>{
+      const {lng,lat}=e.lngLat;
+      showToast('장소 정보 불러오는 중...','hourglass_empty');
+      const place=await reverseGeocode(lat,lng);
+      if(place) { pendingPlace={...place,id:uid(),editing:false}; openDetailSheet(place); }
     });
   });
 }
 
-clearBtn.addEventListener('click', () => {
-  searchInput.value = '';
-  clearBtn.classList.add('hidden');
-  suggestionsEl.classList.add('hidden');
-  searchInput.focus();
-});
+async function reverseGeocode(lat,lng) {
+  try {
+    const url=`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ko`;
+    const r=await fetch(url);
+    const d=await r.json();
+    const name=d.name||d.display_name.split(',')[0];
+    const address=d.display_name.split(',').slice(1,3).join(', ').trim();
+    return {name,address,lat,lng,category:guessCategory({type:d.type,class:d.class,display_name:d.display_name})};
+  } catch { return {name:'선택한 위치',address:'',lat,lng,category:'기타'}; }
+}
 
-document.addEventListener('click', (e) => {
-  if (!document.getElementById('search-container').contains(e.target))
-    suggestionsEl.classList.add('hidden');
-});
+function updateMapView() {
+  if(!map||!map.isStyleLoaded()) { setTimeout(updateMapView,300); return; }
 
-searchInput.addEventListener('keydown', e => {
-  if (e.key === 'Escape') suggestionsEl.classList.add('hidden');
-});
+  // Clear old markers
+  markers.forEach(m=>m.remove());
+  markers=[];
 
-// ═══════════════════════════════════════════════
-// 13. Init
-// ═══════════════════════════════════════════════
-buildLangPanel();
-initMap();
+  // Clear route
+  if(map.getLayer('route')) map.removeLayer('route');
+  if(map.getSource('route')) map.removeSource('route');
+
+  const places=state.places;
+  if(!places.length) return;
+
+  // Add markers
+  places.forEach((p,i)=>{
+    const cat=CATS[p.category]||CATS['기타'];
+    const el=document.createElement('div');
+    el.className='marker-pin cursor-pointer';
+    el.style.cssText=`background:${cat.color};width:34px;height:34px`;
+    el.innerHTML=`<span class="marker-num">${i+1}</span>`;
+    el.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      new maplibregl.Popup({offset:20,closeButton:false})
+        .setLngLat([p.lng,p.lat])
+        .setHTML(`<div style="font-family:Inter,sans-serif"><p style="font-size:10px;color:#797a84;font-weight:700;text-transform:uppercase;margin:0 0 2px">${p.category}</p><p style="font-size:15px;font-weight:800;color:#0f57d0;margin:0 0 4px">${p.name}</p><p style="font-size:12px;color:#30323b;margin:0">${fmtDur(p.duration)} · ${fmtCost(p.cost)}</p></div>`)
+        .addTo(map);
+    });
+    const marker=new maplibregl.Marker({element:el,anchor:'bottom'})
+      .setLngLat([p.lng,p.lat]).addTo(map);
+    markers.push(marker);
+  });
+
+  // Draw route line
+  if(places.length>=2) {
+    const coords=places.map(p=>[p.lng,p.lat]);
+    map.addSource('route',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:coords}}});
+    map.addLayer({id:'route',type:'line',source:'route',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#0f57d0','line-width':3,'line-dasharray':[2,3],'line-opacity':0.7}});
+  }
+
+  // Fit bounds
+  if(places.length===1) { map.flyTo({center:[places[0].lng,places[0].lat],zoom:14,duration:1000}); }
+  else {
+    const bounds=new maplibregl.LngLatBounds();
+    places.forEach(p=>bounds.extend([p.lng,p.lat]));
+    map.fitBounds(bounds,{padding:60,duration:1000,maxZoom:14});
+  }
+
+  // Update mini list in map view
+  const mapPlaces=document.getElementById('map-places');
+  mapPlaces.innerHTML=places.map((p,i)=>{
+    const cat=CATS[p.category]||CATS['기타'];
+    return `<div class="flex items-center gap-3 py-2 border-b border-outline-variant/10 last:border-0 cursor-pointer" onclick="map.flyTo({center:[${p.lng},${p.lat}],zoom:15,duration:800})">
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black shrink-0" style="background:${cat.color}">${i+1}</div>
+      <div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${p.name}</p><p class="text-xs text-outline">${fmtDur(p.duration)} · ${fmtCost(p.cost)}</p></div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+(function init() {
+  switchTab('timeline');
+  onDateChange(state.date);
+  initMap();
+
+  // Init transport UI
+  const t=TRANSPORT_MODES[0];
+  document.getElementById('transport-icon').textContent=t.icon;
+  document.getElementById('transport-label').textContent=t.label;
+})();
 </script>
 </body>
 </html>
