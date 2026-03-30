@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "outline": "#797a84",
+              "surface-dim": "#d9d9e4",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary": "#fff6ff",
+              "secondary-dim": "#4d5366",
+              "surface-variant": "#e1e2ed",
+              "tertiary-dim": "#5f4b73",
+              "on-primary-fixed-variant": "#000e32",
+              "surface-container-highest": "#e1e2ed",
+              "inverse-surface": "#0d0e12",
+              "secondary-fixed-dim": "#ced4eb",
+              "surface": "#faf8fe",
+              "on-error-container": "#6e0a12",
+              "surface-container": "#ededf6",
+              "on-primary": "#f9f8ff",
+              "surface-container-low": "#f4f3fa",
+              "tertiary-fixed": "#e8cdfd",
+              "primary-container": "#4e83fe",
+              "surface-container-high": "#e7e7f1",
+              "tertiary-fixed-dim": "#dabfef",
+              "on-secondary-fixed-variant": "#555b6e",
+              "on-primary-fixed": "#000000",
+              "surface-bright": "#faf8fe",
+              "on-secondary": "#f9f8ff",
+              "on-background": "#30323b",
+              "on-primary-container": "#000000",
+              "tertiary": "#6c567f",
+              "on-surface-variant": "#5d5f68",
+              "primary-fixed-dim": "#3f75f0",
+              "on-tertiary-fixed-variant": "#614c74",
+              "secondary": "#595e72",
+              "primary-dim": "#004bbc",
+              "error": "#a83836",
+              "on-tertiary-container": "#57426a",
+              "error-dim": "#67040d",
+              "inverse-on-surface": "#9d9ca2",
+              "primary": "#0f57d0",
+              "on-surface": "#30323b",
+              "secondary-fixed": "#dce2f9",
+              "secondary-container": "#dce2f9",
+              "on-error": "#fff7f6",
+              "on-secondary-container": "#4b5164",
+              "inverse-primary": "#5c8bff",
+              "surface-tint": "#0f57d0",
+              "on-secondary-fixed": "#393f51",
+              "outline-variant": "#b0b1bc",
+              "tertiary-container": "#e8cdfd",
+              "on-tertiary-fixed": "#433056",
+              "primary-fixed": "#4e83fe",
+              "error-container": "#fa746f",
+              "background": "#faf8fe"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased pb-24">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-[0px_12px_32px_rgba(15,87,208,0.06)] flex items-center justify-between px-6 h-16">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-full hover:bg-slate-100/50 active:scale-95 duration-200 transition-colors">
+<span class="material-symbols-outlined text-blue-700" data-icon="search">search</span>
+</div>
+</div>
+<h1 class="font-headline text-xl font-bold tracking-tight text-slate-900">탐색</h1>
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-full hover:bg-slate-100/50 active:scale-95 duration-200 transition-colors">
+<span class="material-symbols-outlined text-slate-500" data-icon="notifications">notifications</span>
+</div>
+</div>
+</nav>
+<main class="pt-20 px-6 space-y-10">
+<!-- Hero Section: Next Trip -->
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<div>
+<span class="text-label text-outline text-[11px] font-semibold uppercase tracking-widest">다가오는 모험</span>
+<h2 class="text-headline text-2xl font-extrabold tracking-tight mt-1">나의 다음 여행</h2>
+</div>
+<button class="text-primary text-sm font-semibold hover:underline">모두 보기</button>
+</div>
+<div class="relative w-full aspect-[16/10] rounded-[2rem] overflow-hidden group shadow-[0px_12px_32px_rgba(15,87,208,0.1)]">
+<img alt="제주도 해안선" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Stunning aerial view of Jeju Island emerald waters hitting volcanic rock coastline with lush greenery and white sandy beaches in soft morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGHmMxD1bCQsn1eQycAiMP0cz4luNE7WVeIMJdn1c_KzDanKnWNcd9Ti5ftu9ydEAvAyy8uqtdltbCnBZ1os_jaT57u47Gplkbiyf0FrKEJHqcgRGTUb5kEQD8jfVt4hGbtb5bEu2jmNl9kyNhg35pIwqPF8aHP5kwPkryIMjCBHNd5Mf1y4XDPNMCwJgZJPzRPaLWVykn9SpB7qiQKO-toN5xM5sP-HItfo4vGuyV3R2lUoKW9QX5_X_AIuTCZN9PA3WxRCpju1g"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full flex justify-between items-end">
+<div class="space-y-1">
+<div class="flex items-center gap-2 text-white/80 text-sm font-medium">
+<span class="material-symbols-outlined text-[16px]" data-icon="flight_takeoff">flight_takeoff</span>
+<span>서울발 제주행</span>
+</div>
+<h3 class="text-white text-3xl font-bold tracking-tight">여름 휴가</h3>
+<p class="text-white/60 text-sm">출발일: 2024년 8월 12일</p>
+</div>
+<!-- Countdown Tag -->
+<div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 text-center min-w-[80px]">
+<span class="block text-white text-xl font-bold">14</span>
+<span class="block text-white/70 text-[10px] uppercase tracking-tighter font-bold">14일 남음</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Search Bar: Floating Thumb Zone -->
+<div class="relative">
+<div class="flex items-center gap-4 bg-surface-container p-4 rounded-3xl shadow-[0px_8px_24px_rgba(15,87,208,0.04)] transition-all focus-within:bg-surface-container-lowest focus-within:shadow-xl group">
+<span class="material-symbols-outlined text-outline group-focus-within:text-primary" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 p-0 text-on-surface w-full placeholder:text-outline/60 font-medium" placeholder="어디로 떠나고 싶으신가요?" type="text"/>
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary shadow-sm active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[20px]" data-icon="tune">tune</span>
+</div>
+</div>
+</div>
+<!-- Recommended Destinations -->
+<section class="space-y-6">
+<div class="flex justify-between items-center">
+<h2 class="text-headline text-xl font-extrabold tracking-tight">추천 여행지</h2>
+<div class="flex gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-surface-container-highest"></span>
+</div>
+</div>
+<div class="flex gap-6 overflow-x-auto hide-scrollbar -mx-6 px-6 pb-4">
+<!-- Tokyo Card -->
+<div class="flex-none w-[280px] space-y-4 group cursor-pointer">
+<div class="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-lg">
+<img alt="도쿄 도시 풍경" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Vibrant Tokyo neon street at night with futuristic buildings and a mix of traditional architecture under a rainy purple sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbHdwQprFKSirs4AVU2sLBmhTApymnoFiwhmi2PhQQSxzKagAXk71ambwr1NrrmXcuxxigew9IYe-FdJ196qKw1TrkPh24EpbBWi8BuCfpUoIAjDX1N-JGDuQJKZSfNo-IohSncY5xYpDSr-S73PaWoil5buAwEvWiS0QI-Zii01lKts5YLH2BbLmt8W52ehZiZBm73Ax6QOvkI2NIOzm9WjxCWLFlR0TEHQy4AajcfQ3dxAj-7s7jwJLuIhgRdbM8erwbptda7QA"/>
+<div class="absolute top-4 right-4 bg-white/20 backdrop-blur-xl p-2 rounded-full text-white">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+<div class="absolute bottom-6 left-6 right-6 p-4 bg-white/90 backdrop-blur-md rounded-2xl flex justify-between items-center">
+<div>
+<p class="text-[10px] text-outline font-bold uppercase tracking-widest">일본</p>
+<h4 class="font-bold text-slate-900 text-lg">도쿄</h4>
+</div>
+<div class="bg-blue-50 text-blue-700 px-3 py-1 rounded-xl font-bold text-sm">
+                                $1,200
+                            </div>
+</div>
+</div>
+</div>
+<!-- Bali Card -->
+<div class="flex-none w-[280px] space-y-4 group cursor-pointer">
+<div class="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-lg">
+<img alt="발리 사원" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Serene Balinese water temple at sunset surrounded by lush tropical gardens and reflection on calm water surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4y8Cive7jU_UGwO4TlW21p49jPWRoYQOBgJ9QnWwE9NgXH4p3pV6mnGSdD5o1F08BeVasjAPM9ABnRoTgA56dJYGetb1FJrSc4Lu_z05a9PcU4p5UVaABDbrc0sGPAZh780XtPxSRiqCiRA9eVId2gT2T3KxBE8fvzsN5HIMoCFxfyoQus-5P1SQTHGTpG66GY71w0taeSvbQLKdpk0afWPGge1Q9r03OEqoEXCJ3EDuDTIgeKD5RLxDIZIJd7zcwHLp0xjzlYmc"/>
+<div class="absolute top-4 right-4 bg-white/20 backdrop-blur-xl p-2 rounded-full text-white">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</div>
+<div class="absolute bottom-6 left-6 right-6 p-4 bg-white/90 backdrop-blur-md rounded-2xl flex justify-between items-center">
+<div>
+<p class="text-[10px] text-outline font-bold uppercase tracking-widest">인도네시아</p>
+<h4 class="font-bold text-slate-900 text-lg">발리</h4>
+</div>
+<div class="bg-blue-50 text-blue-700 px-3 py-1 rounded-xl font-bold text-sm">
+                                $850
+                            </div>
+</div>
+</div>
+</div>
+<!-- Paris Card -->
+<div class="flex-none w-[280px] space-y-4 group cursor-pointer">
+<div class="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-lg">
+<img alt="파리 에펠탑" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="The Eiffel Tower seen through a classic Parisian street during spring with blossoming cherry trees and vintage architecture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzh78XINKhwjXqhNZKebh1cBcwz_PXXnSOrqKEsuzVV0QwYPMCo3dn-y7rAR_TMAyfa8LmHaPfdf_g2JtMvwvRQjTITs-PRfRyCHAaOyg7ocSfcsu51kditC0UJ9-PwwWyJsxtQz8L0og75zhx5SzgtdL6_yazWuFRVIIbRRRcVYbXp8Wmyel4kKfeIK9TWxuHuy6mihfrhyviJVxF9UC3EXHaYxNOczOU-YjkZa5uFR-zHIppZwu1jhzpX2TaCDuFCmFRcJgXRiE"/>
+<div class="absolute top-4 right-4 bg-white/20 backdrop-blur-xl p-2 rounded-full text-white">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</div>
+<div class="absolute bottom-6 left-6 right-6 p-4 bg-white/90 backdrop-blur-md rounded-2xl flex justify-between items-center">
+<div>
+<p class="text-[10px] text-outline font-bold uppercase tracking-widest">프랑스</p>
+<h4 class="font-bold text-slate-900 text-lg">파리</h4>
+</div>
+<div class="bg-blue-50 text-blue-700 px-3 py-1 rounded-xl font-bold text-sm">
+                                $1,540
+                            </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Category Grid -->
+<section class="pb-8">
+<h2 class="text-headline text-xl font-extrabold tracking-tight mb-6">체험 카테고리</h2>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low rounded-3xl p-6 flex flex-col justify-between h-40">
+<div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+</div>
+<span class="font-bold text-slate-800">맛집 탐방</span>
+</div>
+<div class="bg-primary text-white rounded-3xl p-6 flex flex-col justify-between h-40">
+<div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined" data-icon="hiking">hiking</span>
+</div>
+<span class="font-bold">하이킹</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-2xl rounded-t-[2rem] z-50 shadow-[0_-8px_24px_rgba(15,87,208,0.04)]">
+<!-- Home (Inactive) -->
+<div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label text-[11px] font-medium tracking-wide uppercase mt-1">홈</span>
+</div>
+<!-- Explore (Active) -->
+<div class="flex flex-col items-center justify-center bg-blue-50 text-blue-700 rounded-2xl px-5 py-2 active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="explore" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="font-label text-[11px] font-medium tracking-wide uppercase mt-1">탐색</span>
+</div>
+<!-- Trips (Inactive) -->
+<div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="luggage">luggage</span>
+<span class="font-label text-[11px] font-medium tracking-wide uppercase mt-1">여행</span>
+</div>
+<!-- Profile (Inactive) -->
+<div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label text-[11px] font-medium tracking-wide uppercase mt-1">프로필</span>
+</div>
+</nav>
+<!-- Floating Action Button: Contextual -->
+<button class="fixed bottom-28 right-6 w-14 h-14 bg-gradient-to-tr from-primary to-primary-container text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 z-40">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</body></html>

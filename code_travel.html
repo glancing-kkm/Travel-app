@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>준비물 체크리스트 - 디지털 컨시어지</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "outline": "#797a84",
+                        "surface-dim": "#d9d9e4",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#fff6ff",
+                        "secondary-dim": "#4d5366",
+                        "surface-variant": "#e1e2ed",
+                        "tertiary-dim": "#5f4b73",
+                        "on-primary-fixed-variant": "#000e32",
+                        "surface-container-highest": "#e1e2ed",
+                        "inverse-surface": "#0d0e12",
+                        "secondary-fixed-dim": "#ced4eb",
+                        "surface": "#faf8fe",
+                        "on-error-container": "#6e0a12",
+                        "surface-container": "#ededf6",
+                        "on-primary": "#f9f8ff",
+                        "surface-container-low": "#f4f3fa",
+                        "tertiary-fixed": "#e8cdfd",
+                        "primary-container": "#4e83fe",
+                        "surface-container-high": "#e7e7f1",
+                        "tertiary-fixed-dim": "#dabfef",
+                        "on-secondary-fixed-variant": "#555b6e",
+                        "on-primary-fixed": "#000000",
+                        "surface-bright": "#faf8fe",
+                        "on-secondary": "#f9f8ff",
+                        "on-background": "#30323b",
+                        "on-primary-container": "#000000",
+                        "tertiary": "#6c567f",
+                        "on-surface-variant": "#5d5f68",
+                        "primary-fixed-dim": "#3f75f0",
+                        "on-tertiary-fixed-variant": "#614c74",
+                        "secondary": "#595e72",
+                        "primary-dim": "#004bbc",
+                        "error": "#a83836",
+                        "on-tertiary-container": "#57426a",
+                        "error-dim": "#67040d",
+                        "inverse-on-surface": "#9d9ca2",
+                        "primary": "#0f57d0",
+                        "on-surface": "#30323b",
+                        "secondary-fixed": "#dce2f9",
+                        "secondary-container": "#dce2f9",
+                        "on-error": "#fff7f6",
+                        "on-secondary-container": "#4b5164",
+                        "inverse-primary": "#5c8bff",
+                        "surface-tint": "#0f57d0",
+                        "on-secondary-fixed": "#393f51",
+                        "outline-variant": "#b0b1bc",
+                        "tertiary-container": "#e8cdfd",
+                        "on-tertiary-fixed": "#433056",
+                        "primary-fixed": "#4e83fe",
+                        "error-container": "#fa746f",
+                        "background": "#faf8fe"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 0px; }
+        body { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased pb-32">
+<!-- Top AppBar -->
+<header class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl no-border tonal-shift bg-slate-50 flex items-center justify-between px-6 h-16 w-full shadow-[0px_12px_32px_rgba(15,87,208,0.06)]">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="luggage">luggage</span>
+<h1 class="font-headline text-xl font-bold text-slate-900 tracking-tight">여행</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-slate-100/50 rounded-full transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-slate-500" data-icon="search">search</span>
+</button>
+<button class="p-2 hover:bg-slate-100/50 rounded-full transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-slate-500" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<main class="pt-24 px-6 max-w-2xl mx-auto">
+<!-- Progress Hero Section -->
+<section class="mb-10">
+<div class="flex items-end justify-between mb-4">
+<div>
+<span class="text-label-md text-outline uppercase tracking-widest font-semibold text-[10px]">준비 단계</span>
+<h2 class="text-3xl font-headline font-extrabold tracking-tighter text-on-surface mt-1">여행 준비되셨나요?</h2>
+</div>
+<div class="text-right">
+<span class="text-2xl font-headline font-bold text-primary">64%</span>
+<p class="text-[11px] font-medium text-outline uppercase tracking-wider">완료</p>
+</div>
+</div>
+<div class="h-3 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-primary-container w-[64%] rounded-full"></div>
+</div>
+<p class="mt-4 text-on-surface-variant text-sm leading-relaxed">
+                아말피 해안 여행까지 <span class="font-bold text-primary">12개의 준비물</span>이 남았습니다.
+            </p>
+</section>
+<!-- Packing Categories -->
+<div class="space-y-10">
+<!-- Category: Documents -->
+<section>
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-headline font-bold text-lg text-on-surface">서류</h3>
+<span class="text-xs font-medium text-outline">2/3</span>
+</div>
+<div class="bg-surface-container-lowest rounded-3xl p-2 shadow-[0px_12px_32px_rgba(15,87,208,0.04)] overflow-hidden">
+<div class="space-y-1">
+<label class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors rounded-2xl cursor-pointer">
+<input checked="" class="w-6 h-6 rounded-lg border-outline-variant text-primary focus:ring-primary/20 transition-all" type="checkbox"/>
+<span class="flex-grow text-on-surface font-medium">여권 및 비자</span>
+<span class="material-symbols-outlined text-outline text-sm" data-icon="description">description</span>
+</label>
+<label class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors rounded-2xl cursor-pointer">
+<input checked="" class="w-6 h-6 rounded-lg border-outline-variant text-primary focus:ring-primary/20 transition-all" type="checkbox"/>
+<span class="flex-grow text-on-surface font-medium">여행자 보험</span>
+<span class="material-symbols-outlined text-outline text-sm" data-icon="verified_user">verified_user</span>
+</label>
+<label class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors rounded-2xl cursor-pointer">
+<input class="w-6 h-6 rounded-lg border-outline-variant text-primary focus:ring-primary/20 transition-all" type="checkbox"/>
+<span class="flex-grow text-on-surface font-medium">항공권 탑승권</span>
+<span class="material-symbols-outlined text-outline text-sm" data-icon="airplane_ticket">airplane_ticket</span>
+</label>
+</div>
+<button class="w-full mt-1 py-4 flex items-center justify-center gap-2 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="add">add</span>
+                        항목 추가
+                    </button>
+</div>
+</section>
+<!-- Category: Electronics -->
+<section>
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-headline font-bold text-lg text-on-surface">전자기기</h3>
+<span class="text-xs font-medium text-outline">1/4</span>
+</div>
+<div class="bg-surface-container-lowest rounded-3xl p-2 shadow-[0px_12px_32px_rgba(15,87,208,0.04)] overflow-hidden">
+<div class="space-y-1">
+<label class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors rounded-2xl cursor-pointer">
+<input checked="" class="w-6 h-6 rounded-lg border-outline-variant text-primary focus:ring-primary/20 transition-all" type="checkbox"/>
+<span class="flex-grow text-on-surface font-medium">멀티 어댑터</span>
+<span class="material-symbols-outlined text-outline text-sm" data-icon="power">power</span>
+</label>
+<label class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors rounded-2xl cursor-pointer">
+<input class="w-6 h-6 rounded-lg border-outline-variant text-primary focus:ring-primary/20 transition-all" type="checkbox"/>
+<span class="flex-grow text-on-surface font-medium">노이즈 캔슬링 헤드폰</span>
+<span class="material-symbols-outlined text-outline text-sm" data-icon="headphones">headphones</span>
+</label>
+<label class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors rounded-2xl cursor-pointer">
+<input class="w-6 h-6 rounded-lg border-outline-variant text-primary focus:ring-primary/20 transition-all" type="checkbox"/>
+<span class="flex-grow text-on-surface font-medium">보조 배터리</span>
+<span class="material-symbols-outlined text-outline text-sm" data-icon="battery_charging_full">battery_charging_full</span>
+</label>
+<label class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors rounded-2xl cursor-pointer">
+<input class="w-6 h-6 rounded-lg border-outline-variant text-primary focus:ring-primary/20 transition-all" type="checkbox"/>
+<span class="flex-grow text-on-surface font-medium">카메라 장비</span>
+<span class="material-symbols-outlined text-outline text-sm" data-icon="photo_camera">photo_camera</span>
+</label>
+</div>
+<button class="w-full mt-1 py-4 flex items-center justify-center gap-2 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="add">add</span>
+                        항목 추가
+                    </button>
+</div>
+</section>
+<!-- Category: Clothing -->
+<section>
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-headline font-bold text-lg text-on-surface">의류</h3>
+<span class="text-xs font-medium text-outline">5/8</span>
+</div>
+<!-- Bento Grid Style for Items -->
+<div class="grid grid-cols-1 gap-4">
+<div class="bg-surface-container-lowest rounded-3xl p-6 shadow-[0px_12px_32px_rgba(15,87,208,0.04)] flex items-center justify-between border-l-4 border-primary">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary bg-primary/10 p-3 rounded-2xl" data-icon="checkroom">checkroom</span>
+<div>
+<p class="font-bold text-on-surface">린넨 셔츠 (4벌)</p>
+<p class="text-xs text-outline font-medium uppercase tracking-tighter">여름 필수 아이템</p>
+</div>
+</div>
+<input checked="" class="w-8 h-8 rounded-full border-outline-variant text-primary focus:ring-primary/20 transition-all" type="checkbox"/>
+</div>
+<div class="bg-surface-container-lowest rounded-3xl p-6 shadow-[0px_12px_32px_rgba(15,87,208,0.04)] flex items-center justify-between border-l-4 border-surface-container">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-outline bg-surface-container p-3 rounded-2xl" data-icon="footprint">footprint</span>
+<div>
+<p class="font-bold text-on-surface">편한 운동화</p>
+<p class="text-xs text-outline font-medium uppercase tracking-tighter">활동성 위주</p>
+</div>
+</div>
+<input class="w-8 h-8 rounded-full border-outline-variant text-primary focus:ring-primary/20 transition-all" type="checkbox"/>
+</div>
+</div>
+<div class="mt-6 flex gap-3">
+<div class="relative h-48 w-1/2 rounded-3xl overflow-hidden shadow-xl">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="folded stack of clean linen shirts in neutral tones on a bright sunlit wooden surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWfD2xX_bef-LcHKBfqfnxObN5E12GuubfUsQVzaUR04zAEYtQT9OPUhRDCJw1TXmaxSY6w5F-WGRNink8VJmjNKDp9CCSLZ5nTLxBf9m8A-779lBZU2YcUQC3hwqUx_WPxPkhr65I9PvHSqGwzRfNn4jyNw8tfWsMi0tu8qAUtDLM8845RO1vmQOkVg3hu3ltxbtKPCEdLB61y5On6QMpoUXBgX3zQRgdrYCMb5p-KtjZEB26o9O6j9P6I4poYeQjI9m9X0LRZVo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
+<p class="text-white font-bold text-sm">패킹 영감</p>
+<p class="text-white/70 text-[10px] uppercase">미니멀 여름 룩</p>
+</div>
+</div>
+<button class="flex-1 bg-surface-container-high rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-surface-container-highest transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="add_circle">add_circle</span>
+<span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">항목 추가</span>
+</button>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-2xl rounded-t-[2rem] z-50 shadow-[0_-8px_24px_rgba(15,87,208,0.04)]">
+<a class="flex flex-col items-center justify-center text-slate-400 hover:text-blue-500 transition-transform duration-150 active:scale-90 px-5 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide uppercase mt-1">홈</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 hover:text-blue-500 transition-transform duration-150 active:scale-90 px-5 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide uppercase mt-1">탐색</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-blue-50 text-blue-700 rounded-2xl px-5 py-2 transition-transform duration-150 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="luggage" style="font-variation-settings: 'FILL' 1;">luggage</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide uppercase mt-1">여행</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 hover:text-blue-500 transition-transform duration-150 active:scale-90 px-5 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide uppercase mt-1">프로필</span>
+</a>
+</nav>
+<!-- Floating Action Button for global adding -->
+<button class="fixed bottom-28 right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-2xl shadow-xl flex items-center justify-center active:scale-90 transition-transform z-40">
+<span class="material-symbols-outlined text-2xl" data-icon="playlist_add">playlist_add</span>
+</button>
+</body></html>

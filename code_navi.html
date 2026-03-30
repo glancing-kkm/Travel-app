@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "outline": "#797a84",
+              "surface-dim": "#d9d9e4",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary": "#fff6ff",
+              "secondary-dim": "#4d5366",
+              "surface-variant": "#e1e2ed",
+              "tertiary-dim": "#5f4b73",
+              "on-primary-fixed-variant": "#000e32",
+              "surface-container-highest": "#e1e2ed",
+              "inverse-surface": "#0d0e12",
+              "secondary-fixed-dim": "#ced4eb",
+              "surface": "#faf8fe",
+              "on-error-container": "#6e0a12",
+              "surface-container": "#ededf6",
+              "on-primary": "#f9f8ff",
+              "surface-container-low": "#f4f3fa",
+              "tertiary-fixed": "#e8cdfd",
+              "primary-container": "#4e83fe",
+              "surface-container-high": "#e7e7f1",
+              "tertiary-fixed-dim": "#dabfef",
+              "on-secondary-fixed-variant": "#555b6e",
+              "on-primary-fixed": "#000000",
+              "surface-bright": "#faf8fe",
+              "on-secondary": "#f9f8ff",
+              "on-background": "#30323b",
+              "on-primary-container": "#000000",
+              "tertiary": "#6c567f",
+              "on-surface-variant": "#5d5f68",
+              "primary-fixed-dim": "#3f75f0",
+              "on-tertiary-fixed-variant": "#614c74",
+              "secondary": "#595e72",
+              "primary-dim": "#004bbc",
+              "error": "#a83836",
+              "on-tertiary-container": "#57426a",
+              "error-dim": "#67040d",
+              "inverse-on-surface": "#9d9ca2",
+              "primary": "#0f57d0",
+              "on-surface": "#30323b",
+              "secondary-fixed": "#dce2f9",
+              "secondary-container": "#dce2f9",
+              "on-error": "#fff7f6",
+              "on-secondary-container": "#4b5164",
+              "inverse-primary": "#5c8bff",
+              "surface-tint": "#0f57d0",
+              "on-secondary-fixed": "#393f51",
+              "outline-variant": "#b0b1bc",
+              "tertiary-container": "#e8cdfd",
+              "on-tertiary-fixed": "#433056",
+              "primary-fixed": "#4e83fe",
+              "error-container": "#fa746f",
+              "background": "#faf8fe"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .step-connector {
+            background: linear-gradient(to bottom, transparent 0%, #0f57d0 20%, #0f57d0 80%, transparent 100%);
+            width: 2px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl no-border tonal-shift bg-slate-50 shadow-[0px_12px_32px_rgba(15,87,208,0.06)] flex items-center justify-between px-6 h-16 w-full">
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-slate-100/50 transition-colors active:scale-95 duration-200 text-slate-900">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold text-slate-900 tracking-tight font-headline">경로 찾기</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-700">search</span>
+<span class="material-symbols-outlined text-slate-500 ml-4">notifications</span>
+</div>
+</nav>
+<main class="pt-16 pb-32">
+<!-- Map Section -->
+<section class="relative h-[397px] w-full overflow-hidden">
+<div class="absolute inset-0 bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Modern minimalist map of Seoul South Korea with subtle blue route lines and clean white streets" data-location="Seoul" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRDBbtfrc3Soe33pyuacp8my3bgicswWjp4zg5D2PYEuXBw7uQ7PMrOhfOXKiq9jbKguVR43CBgwh1m6dClihBWfDzWHbbfMUfzZa-Vdm0p_s7c50K_L12D0i4B_h_6VZGOMcrp_op2AKa6MoIfsk8tiIQTQg4Omx5Sq2Al0_L4zw5w-h7J9WsvlQ8Z36DX24F_i5Qlu-ebrrqaZj1yrNsNisT5QCLikRAGJqfEwOO1Z0XQvUXfKJvGVZRmJFnvGym7s5vv5tAVLw"/>
+</div>
+<!-- Map Overlay UI -->
+<div class="absolute bottom-6 left-6 right-6">
+<div class="bg-white/80 backdrop-blur-2xl rounded-[2rem] p-6 shadow-[0px_12px_32px_rgba(15,87,208,0.06)] flex justify-between items-center">
+<div>
+<span class="text-xs font-bold uppercase tracking-widest text-primary mb-1 block">최적 경로</span>
+<h2 class="text-2xl font-bold text-on-surface tracking-tight">급행 대중교통</h2>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-lg font-bold text-primary">3h 45m</span>
+<span class="text-xs text-outline font-medium">가장 빠른 연결</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Route Details -->
+<section class="px-6 py-10 max-w-2xl mx-auto">
+<div class="flex justify-between items-center mb-8">
+<h3 class="text-xl font-bold tracking-tight">여행 일정</h3>
+<div class="flex gap-2">
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">오늘</span>
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">Dec 14</span>
+</div>
+</div>
+<!-- Timeline -->
+<div class="space-y-4 relative">
+<!-- Stop 1 -->
+<div class="relative flex gap-6">
+<div class="flex flex-col items-center">
+<div class="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white z-10 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">flight_takeoff</span>
+</div>
+<div class="h-full w-0.5 bg-surface-container-highest mt-2"></div>
+</div>
+<div class="flex-1 pb-10">
+<div class="bg-white rounded-3xl p-5 shadow-[0px_12px_32px_rgba(15,87,208,0.04)] border border-white">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-lg leading-tight text-on-surface">인천공항</h4>
+<span class="text-primary font-bold text-sm tracking-tight">9:00 AM</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-4">터미널 2 도착 및 입국 심사. 버스 이용을 위해 교통 센터로 이동하세요.</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">location_on</span>
+<span class="text-xs font-medium text-outline uppercase tracking-wider">1층 14B 게이트</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Transition 1 -->
+<div class="absolute left-6 top-14 bottom-14 w-px bg-gradient-to-b from-primary/40 via-primary to-primary/40 -z-0"></div>
+<!-- Stop 2 -->
+<div class="relative flex gap-6">
+<div class="flex flex-col items-center">
+<div class="w-12 h-12 rounded-2xl bg-surface-container-highest flex items-center justify-center text-primary z-10">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
+</div>
+<div class="h-full w-0.5 bg-surface-container-highest mt-2"></div>
+</div>
+<div class="flex-1 pb-10">
+<div class="bg-white rounded-3xl p-5 shadow-[0px_12px_32px_rgba(15,87,208,0.04)] border border-white">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-lg leading-tight text-on-surface">서울역행 버스</h4>
+<span class="text-primary font-bold text-sm tracking-tight">10:30 AM</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-4">공항 리무진 6001번 탑승. USB 충전이 가능한 편안한 좌석입니다.</p>
+<div class="flex gap-3">
+<div class="px-3 py-1.5 rounded-xl bg-surface-container-low flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">confirmation_number</span>
+<span class="text-[11px] font-bold text-on-surface-variant">KRW 17,000</span>
+</div>
+<div class="px-3 py-1.5 rounded-xl bg-surface-container-low flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">schedule</span>
+<span class="text-[11px] font-bold text-on-surface-variant">75분</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Stop 3 -->
+<div class="relative flex gap-6">
+<div class="flex flex-col items-center">
+<div class="w-12 h-12 rounded-2xl bg-tertiary-container flex items-center justify-center text-on-tertiary-container z-10">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">castle</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="bg-white rounded-3xl p-5 shadow-[0px_12px_32px_rgba(15,87,208,0.04)] border border-white overflow-hidden relative">
+<!-- Visual Accent -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+<div class="flex justify-between items-start mb-2 relative z-10">
+<h4 class="font-bold text-lg leading-tight text-on-surface">남산타워</h4>
+<span class="text-primary font-bold text-sm tracking-tight">12:00 PM</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-4 relative z-10">최종 목적지. 도시의 스카이라인을 한눈에 감상하세요. 근처에 케이블카 승강장이 있습니다.</p>
+<div class="flex items-center gap-3 relative z-10">
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border-2 border-white object-cover" data-alt="Close up portrait of a smiling young man in a park" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgpTJvtu9q-F3sQxNfD9sjezRO5borsOZ1AdDuvi7ZKSQIh8knLG1TnZC_xp_Zo5dARaReavwbVQVE57u731hTtN3KTsLJTsdBPJduZoKaYZBEJzq0ZKcePL5N0jbVEzSCEdMyjV1rHMwdM73UG_rmaHZsfn4HjPtOJ2fFbwQboiEvex9NTT1Rzf63_YdEz3oJ4h1A-mBJz9ZrCrE86VR42RRdn-3WfJQV3VBQBk4Q53eGzcnwSUc6Zxhgz1f3ioSIZhI4sQT241g"/>
+<img class="w-6 h-6 rounded-full border-2 border-white object-cover" data-alt="Portrait of a woman with vibrant lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeRv0qFt3sPk7Utl-ypEhxu4cn3ZUzEPQC4X33ANxPdywdPLYoB7suJGJoLanogefmCcZuSFhF9W_pjdkD1SndfN2VGpSJ82-nMrkjN2qhX9VX6iBTOmRazrW4NfDvgMX4Udmi_-flKGy-aHO5nJeU2LYiSpJDMy_rLj3TNssUN8LRR2_9ZqIOpUqEOGRR71zhswwS7h2BhHSu6VUWsXBOOw5u4rbu2j3ACJY9uct6zKxGcOukNU7KZeVJ_Fsbu7yC9Bw7t1Izn90"/>
+<div class="w-6 h-6 rounded-full border-2 border-white bg-primary-container text-[8px] font-bold flex items-center justify-center text-white">+12</div>
+</div>
+<span class="text-[11px] font-medium text-outline uppercase tracking-wider">현재 혼잡함</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Action Bar -->
+<div class="fixed bottom-24 left-6 right-6 z-40">
+<button class="w-full h-14 bg-gradient-to-r from-primary to-primary-container text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-xl active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">directions</span>
+<span>실시간 길찾기 시작</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-2xl rounded-t-[2rem] z-50 shadow-[0_-8px_24px_rgba(15,87,208,0.04)]">
+<div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-transform active:scale-90 duration-150">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide uppercase mt-1">홈</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-transform active:scale-90 duration-150">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide uppercase mt-1">탐색</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-blue-50 text-blue-700 rounded-2xl px-5 py-2 transition-transform active:scale-90 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">luggage</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide uppercase mt-1">여행</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-transform active:scale-90 duration-150">
+<span class="material-symbols-outlined">person</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide uppercase mt-1">프로필</span>
+</div>
+</nav>
+</body></html>

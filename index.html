@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>TravelApp</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "outline": "#797a84",
+            "surface-dim": "#d9d9e4",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary": "#fff6ff",
+            "secondary-dim": "#4d5366",
+            "surface-variant": "#e1e2ed",
+            "tertiary-dim": "#5f4b73",
+            "surface-container-highest": "#e1e2ed",
+            "surface": "#faf8fe",
+            "surface-container": "#ededf6",
+            "on-primary": "#f9f8ff",
+            "surface-container-low": "#f4f3fa",
+            "primary-container": "#4e83fe",
+            "surface-container-high": "#e7e7f1",
+            "on-secondary": "#f9f8ff",
+            "on-background": "#30323b",
+            "tertiary": "#6c567f",
+            "on-surface-variant": "#5d5f68",
+            "secondary": "#595e72",
+            "primary-dim": "#004bbc",
+            "error": "#a83836",
+            "primary": "#0f57d0",
+            "on-surface": "#30323b",
+            "secondary-container": "#dce2f9",
+            "outline-variant": "#b0b1bc",
+            "tertiary-container": "#e8cdfd",
+            "primary-fixed": "#4e83fe",
+            "error-container": "#fa746f",
+            "background": "#faf8fe"
+          },
+          fontFamily: {
+            "headline": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    body {
+      min-height: 100dvh;
+      font-family: 'Inter', sans-serif;
+      background-color: #faf8fe;
+    }
+    .search-highlight {
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #e7e7f1 25%, #f4f3fa 50%, #e7e7f1 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+  </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased pb-24">
+
+  <!-- TopAppBar -->
+  <nav class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-[0px_12px_32px_rgba(15,87,208,0.06)] flex items-center justify-between px-6 h-16">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">flight_takeoff</span>
+      <h1 class="font-headline text-xl font-bold tracking-tight text-slate-900">TravelApp</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="p-2 rounded-full hover:bg-slate-100/50 active:scale-95 duration-200 transition-colors">
+        <span class="material-symbols-outlined text-slate-500">notifications</span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="pt-20 px-6 space-y-10 max-w-2xl mx-auto">
+
+    <!-- Hero Section -->
+    <section class="space-y-4">
+      <div class="flex justify-between items-end">
+        <div>
+          <span class="text-outline text-[11px] font-semibold uppercase tracking-widest">EXPLORE THE WORLD</span>
+          <h2 class="text-2xl font-extrabold tracking-tight mt-1">당신의 다음 여행</h2>
+        </div>
+      </div>
+      <div class="relative w-full aspect-[16/10] rounded-[2rem] overflow-hidden group shadow-[0px_12px_32px_rgba(15,87,208,0.1)]">
+        <img alt="여행 히어로 이미지" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+             src="https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=1400"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-8 w-full">
+          <div class="space-y-1">
+            <h3 class="text-white text-3xl font-bold tracking-tight">완벽한 여행을 계획하세요</h3>
+            <p class="text-white/70 text-sm">전 세계 수천 개의 여행지가 당신을 기다립니다</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Search Bar -->
+    <div class="relative" id="search-container">
+      <div class="flex items-center gap-4 bg-surface-container p-4 rounded-3xl shadow-[0px_8px_24px_rgba(15,87,208,0.04)] transition-all focus-within:bg-surface-container-lowest focus-within:shadow-xl group">
+        <span class="material-symbols-outlined text-outline group-focus-within:text-primary">search</span>
+        <input id="search-input" class="bg-transparent border-none focus:ring-0 p-0 text-on-surface w-full placeholder:text-outline/60 font-medium text-base"
+               placeholder="여행지, 도시, 국가 검색..." type="text" autocomplete="off"/>
+        <button id="search-btn" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary shadow-sm active:scale-90 transition-transform shrink-0">
+          <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+        </button>
+      </div>
+      <!-- Search Suggestions Dropdown -->
+      <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-outline-variant/10 overflow-hidden z-50 max-h-64 overflow-y-auto"></div>
+    </div>
+
+    <!-- Popular Destinations -->
+    <section class="space-y-6" id="destinations-section">
+      <div class="flex justify-between items-center">
+        <h2 class="font-headline text-xl font-extrabold tracking-tight">인기 여행지</h2>
+        <div class="flex gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-surface-container-highest"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-surface-container-highest"></span>
+        </div>
+      </div>
+      <div id="cards-container" class="flex gap-6 overflow-x-auto hide-scrollbar -mx-6 px-6 pb-4">
+        <!-- Cards rendered by JS -->
+      </div>
+    </section>
+
+    <!-- Search Results (hidden initially) -->
+    <section id="search-results" class="hidden space-y-6">
+      <div class="flex justify-between items-center">
+        <h2 class="font-headline text-xl font-extrabold tracking-tight" id="results-title">검색 결과</h2>
+        <button id="back-to-all" class="text-primary text-sm font-semibold hover:underline flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">arrow_back</span>
+          전체 보기
+        </button>
+      </div>
+      <div id="results-container" class="grid grid-cols-1 gap-4"></div>
+    </section>
+
+    <!-- Category Grid -->
+    <section class="pb-8">
+      <h2 class="font-headline text-xl font-extrabold tracking-tight mb-6">체험 카테고리</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-surface-container-low rounded-3xl p-6 flex flex-col justify-between h-40 hover:shadow-md transition-shadow cursor-pointer">
+          <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
+            <span class="material-symbols-outlined">restaurant</span>
+          </div>
+          <span class="font-bold text-slate-800">맛집 탐방</span>
+        </div>
+        <div class="bg-primary text-white rounded-3xl p-6 flex flex-col justify-between h-40 hover:shadow-md transition-shadow cursor-pointer">
+          <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shadow-sm">
+            <span class="material-symbols-outlined">hiking</span>
+          </div>
+          <span class="font-bold">하이킹</span>
+        </div>
+        <div class="bg-tertiary-container rounded-3xl p-6 flex flex-col justify-between h-40 hover:shadow-md transition-shadow cursor-pointer">
+          <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-tertiary shadow-sm">
+            <span class="material-symbols-outlined">photo_camera</span>
+          </div>
+          <span class="font-bold text-slate-800">사진 명소</span>
+        </div>
+        <div class="bg-surface-container-low rounded-3xl p-6 flex flex-col justify-between h-40 hover:shadow-md transition-shadow cursor-pointer">
+          <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
+            <span class="material-symbols-outlined">beach_access</span>
+          </div>
+          <span class="font-bold text-slate-800">해변 휴양</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-2xl rounded-t-[2rem] z-50 shadow-[0_-8px_24px_rgba(15,87,208,0.04)]">
+    <div class="flex flex-col items-center justify-center bg-blue-50 text-blue-700 rounded-2xl px-5 py-2 active:scale-90 transition-transform duration-150 cursor-pointer">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+      <span class="text-[11px] font-medium tracking-wide uppercase mt-1">홈</span>
+    </div>
+    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors active:scale-90 duration-150 cursor-pointer">
+      <span class="material-symbols-outlined">explore</span>
+      <span class="text-[11px] font-medium tracking-wide uppercase mt-1">탐색</span>
+    </div>
+    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors active:scale-90 duration-150 cursor-pointer">
+      <span class="material-symbols-outlined">luggage</span>
+      <span class="text-[11px] font-medium tracking-wide uppercase mt-1">여행</span>
+    </div>
+    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors active:scale-90 duration-150 cursor-pointer">
+      <span class="material-symbols-outlined">person</span>
+      <span class="text-[11px] font-medium tracking-wide uppercase mt-1">프로필</span>
+    </div>
+  </nav>
+
+  <script>
+    // ============================================================
+    // Destination data
+    // ============================================================
+    const destinations = [
+      {
+        id: 1,
+        name: "도쿄",
+        nameEn: "Tokyo",
+        country: "일본",
+        countryEn: "Japan",
+        desc: "전통과 현대가 공존하는 매력적인 도시",
+        price: "₩ 650,000~",
+        img: "https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=600",
+        aliases: ["东京", "とうきょう", "토쿄", "동경", "tokio", "toquio"]
+      },
+      {
+        id: 2,
+        name: "파리",
+        nameEn: "Paris",
+        country: "프랑스",
+        countryEn: "France",
+        desc: "낭만과 예술의 도시, 에펠탑의 고향",
+        price: "₩ 1,200,000~",
+        img: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=600",
+        aliases: ["巴黎", "パリ", "빠리", "pari", "parigi", "париж"]
+      },
+      {
+        id: 3,
+        name: "발리",
+        nameEn: "Bali",
+        country: "인도네시아",
+        countryEn: "Indonesia",
+        desc: "열대 낙원과 힐링 여행의 성지",
+        price: "₩ 780,000~",
+        img: "https://images.unsplash.com/photo-1555993539-1732b0258235?w=600",
+        aliases: ["巴厘岛", "バリ", "바리", "bali island"]
+      },
+      {
+        id: 4,
+        name: "두바이",
+        nameEn: "Dubai",
+        country: "UAE",
+        countryEn: "UAE",
+        desc: "사막 위의 미래 도시, 화려한 럭셔리 여행",
+        price: "₩ 1,050,000~",
+        img: "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=600",
+        aliases: ["迪拜", "ドバイ", "두바히", "dubay", "дубай"]
+      },
+      {
+        id: 5,
+        name: "뉴욕",
+        nameEn: "New York",
+        country: "미국",
+        countryEn: "USA",
+        desc: "세계의 중심, 꿈의 도시",
+        price: "₩ 1,350,000~",
+        img: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600",
+        aliases: ["纽约", "ニューヨーク", "뉴요크", "nueva york", "нью-йорк"]
+      },
+      {
+        id: 6,
+        name: "런던",
+        nameEn: "London",
+        country: "영국",
+        countryEn: "UK",
+        desc: "역사와 문화가 살아 숨쉬는 도시",
+        price: "₩ 1,100,000~",
+        img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600",
+        aliases: ["伦敦", "ロンドン", "론던", "londres", "лондон"]
+      },
+      {
+        id: 7,
+        name: "방콕",
+        nameEn: "Bangkok",
+        country: "태국",
+        countryEn: "Thailand",
+        desc: "맛있는 음식과 화려한 사원의 도시",
+        price: "₩ 450,000~",
+        img: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600",
+        aliases: ["曼谷", "バンコク", "방콕", "krung thep"]
+      },
+      {
+        id: 8,
+        name: "로마",
+        nameEn: "Rome",
+        country: "이탈리아",
+        countryEn: "Italy",
+        desc: "영원한 도시, 고대 문명의 보고",
+        price: "₩ 1,050,000~",
+        img: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=600",
+        aliases: ["罗马", "ローマ", "roma", "рим"]
+      },
+      {
+        id: 9,
+        name: "시드니",
+        nameEn: "Sydney",
+        country: "호주",
+        countryEn: "Australia",
+        desc: "오페라 하우스와 해변의 도시",
+        price: "₩ 980,000~",
+        img: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=600",
+        aliases: ["悉尼", "シドニー", "씨드니"]
+      },
+      {
+        id: 10,
+        name: "바르셀로나",
+        nameEn: "Barcelona",
+        country: "스페인",
+        countryEn: "Spain",
+        desc: "가우디의 건축과 지중해의 만남",
+        price: "₩ 1,080,000~",
+        img: "https://images.unsplash.com/photo-1583422409516-2895a77efded?w=600",
+        aliases: ["巴塞罗那", "バルセロナ", "바르샐로나", "barcelone"]
+      },
+      {
+        id: 11,
+        name: "서울",
+        nameEn: "Seoul",
+        country: "대한민국",
+        countryEn: "South Korea",
+        desc: "K-컬처의 중심지, 전통과 미래의 조화",
+        price: "₩ 150,000~",
+        img: "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=600",
+        aliases: ["首尔", "ソウル", "소울", "сеул"]
+      },
+      {
+        id: 12,
+        name: "오사카",
+        nameEn: "Osaka",
+        country: "일본",
+        countryEn: "Japan",
+        desc: "먹거리 천국, 활기 넘치는 일본의 부엌",
+        price: "₩ 580,000~",
+        img: "https://images.unsplash.com/photo-1590559899731-a382839e5549?w=600",
+        aliases: ["大阪", "おおさか", "오사까"]
+      }
+    ];
+
+    // ============================================================
+    // Fuzzy matching (Levenshtein distance)
+    // ============================================================
+    function levenshtein(a, b) {
+      const m = a.length, n = b.length;
+      if (m === 0) return n;
+      if (n === 0) return m;
+      const dp = Array.from({length: m + 1}, () => Array(n + 1).fill(0));
+      for (let i = 0; i <= m; i++) dp[i][0] = i;
+      for (let j = 0; j <= n; j++) dp[0][j] = j;
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          dp[i][j] = a[i-1] === b[j-1]
+            ? dp[i-1][j-1]
+            : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+        }
+      }
+      return dp[m][n];
+    }
+
+    function searchDestinations(query) {
+      if (!query || query.trim() === '') return [];
+      const q = query.toLowerCase().trim();
+
+      const scored = destinations.map(dest => {
+        const fields = [
+          dest.name.toLowerCase(),
+          dest.nameEn.toLowerCase(),
+          dest.country.toLowerCase(),
+          dest.countryEn.toLowerCase(),
+          ...dest.aliases.map(a => a.toLowerCase())
+        ];
+
+        let bestScore = Infinity;
+
+        for (const field of fields) {
+          // Exact match
+          if (field === q) { bestScore = 0; break; }
+          // Starts with
+          if (field.startsWith(q)) { bestScore = Math.min(bestScore, 1); continue; }
+          // Contains
+          if (field.includes(q)) { bestScore = Math.min(bestScore, 2); continue; }
+          // Query contains field
+          if (q.includes(field)) { bestScore = Math.min(bestScore, 3); continue; }
+          // Fuzzy: Levenshtein distance relative to length
+          const dist = levenshtein(q, field);
+          const threshold = Math.max(q.length, field.length) * 0.45;
+          if (dist <= threshold) {
+            bestScore = Math.min(bestScore, 4 + dist / Math.max(q.length, field.length));
+          }
+        }
+
+        return { dest, score: bestScore };
+      });
+
+      return scored
+        .filter(s => s.score < Infinity)
+        .sort((a, b) => a.score - b.score)
+        .map(s => s.dest);
+    }
+
+    // ============================================================
+    // Render functions
+    // ============================================================
+    function createCardHTML(dest) {
+      return `
+        <div class="flex-none w-[280px] space-y-4 group cursor-pointer search-highlight">
+          <div class="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-lg">
+            <img alt="${dest.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="${dest.img}"/>
+            <div class="absolute top-4 right-4 bg-white/20 backdrop-blur-xl p-2 rounded-full text-white hover:bg-white/40 transition-colors">
+              <span class="material-symbols-outlined">favorite</span>
+            </div>
+            <div class="absolute bottom-6 left-6 right-6 p-4 bg-white/90 backdrop-blur-md rounded-2xl flex justify-between items-center">
+              <div>
+                <p class="text-[10px] text-outline font-bold uppercase tracking-widest">${dest.country}</p>
+                <h4 class="font-bold text-slate-900 text-lg">${dest.name}</h4>
+              </div>
+              <div class="bg-blue-50 text-blue-700 px-3 py-1 rounded-xl font-bold text-sm whitespace-nowrap">
+                ${dest.price}
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function createResultCardHTML(dest) {
+      return `
+        <div class="bg-surface-container-lowest rounded-3xl overflow-hidden shadow-[0px_12px_32px_rgba(15,87,208,0.04)] flex gap-4 p-4 hover:shadow-md transition-shadow cursor-pointer search-highlight">
+          <img alt="${dest.name}" class="w-24 h-24 rounded-2xl object-cover shrink-0" src="${dest.img}"/>
+          <div class="flex flex-col justify-center flex-1 min-w-0">
+            <p class="text-[10px] text-outline font-bold uppercase tracking-widest">${dest.country} · ${dest.countryEn}</p>
+            <h4 class="font-bold text-on-surface text-lg truncate">${dest.name} <span class="text-outline font-normal text-sm">${dest.nameEn}</span></h4>
+            <p class="text-on-surface-variant text-sm truncate">${dest.desc}</p>
+          </div>
+          <div class="flex items-center shrink-0">
+            <span class="text-primary font-bold text-sm whitespace-nowrap">${dest.price}</span>
+          </div>
+        </div>`;
+    }
+
+    function createSuggestionHTML(dest) {
+      return `
+        <div class="suggestion-item flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low cursor-pointer transition-colors" data-name="${dest.name}">
+          <span class="material-symbols-outlined text-primary text-lg">location_on</span>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-on-surface text-sm truncate">${dest.name} <span class="text-outline">${dest.nameEn}</span></p>
+            <p class="text-xs text-outline truncate">${dest.country}</p>
+          </div>
+          <span class="text-xs text-primary font-semibold whitespace-nowrap">${dest.price}</span>
+        </div>`;
+    }
+
+    // ============================================================
+    // DOM & Events
+    // ============================================================
+    const cardsContainer = document.getElementById('cards-container');
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const suggestionsEl = document.getElementById('search-suggestions');
+    const searchResults = document.getElementById('search-results');
+    const resultsContainer = document.getElementById('results-container');
+    const resultsTitle = document.getElementById('results-title');
+    const destinationsSection = document.getElementById('destinations-section');
+    const backBtn = document.getElementById('back-to-all');
+
+    // Render initial cards (first 6)
+    function renderInitialCards() {
+      const initial = destinations.slice(0, 6);
+      cardsContainer.innerHTML = initial.map(createCardHTML).join('');
+    }
+
+    // Show suggestions while typing
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim();
+      if (q.length === 0) {
+        suggestionsEl.classList.add('hidden');
+        return;
+      }
+      const results = searchDestinations(q).slice(0, 5);
+      if (results.length === 0) {
+        suggestionsEl.innerHTML = `
+          <div class="px-4 py-3 text-sm text-outline text-center">검색 결과가 없습니다</div>`;
+      } else {
+        suggestionsEl.innerHTML = results.map(createSuggestionHTML).join('');
+      }
+      suggestionsEl.classList.remove('hidden');
+
+      // Attach click events to suggestions
+      suggestionsEl.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', () => {
+          searchInput.value = item.dataset.name;
+          suggestionsEl.classList.add('hidden');
+          performSearch(item.dataset.name);
+        });
+      });
+    });
+
+    // Close suggestions on outside click
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('search-container').contains(e.target)) {
+        suggestionsEl.classList.add('hidden');
+      }
+    });
+
+    // Perform search
+    function performSearch(query) {
+      const results = searchDestinations(query);
+      if (results.length === 0) {
+        resultsTitle.textContent = `"${query}" 검색 결과 없음`;
+        resultsContainer.innerHTML = `
+          <div class="text-center py-12">
+            <span class="material-symbols-outlined text-6xl text-outline/30 mb-4 block">travel_explore</span>
+            <p class="text-outline text-sm">검색 결과가 없습니다. 다른 키워드로 검색해 보세요.</p>
+          </div>`;
+      } else {
+        resultsTitle.textContent = `"${query}" 검색 결과 (${results.length})`;
+        resultsContainer.innerHTML = results.map(createResultCardHTML).join('');
+      }
+      searchResults.classList.remove('hidden');
+      destinationsSection.classList.add('hidden');
+      suggestionsEl.classList.add('hidden');
+    }
+
+    searchBtn.addEventListener('click', () => {
+      if (searchInput.value.trim()) performSearch(searchInput.value.trim());
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && searchInput.value.trim()) {
+        performSearch(searchInput.value.trim());
+      }
+    });
+
+    // Back to all
+    backBtn.addEventListener('click', () => {
+      searchResults.classList.add('hidden');
+      destinationsSection.classList.remove('hidden');
+      searchInput.value = '';
+    });
+
+    // Init
+    renderInitialCards();
+  </script>
+</body>
+</html>
