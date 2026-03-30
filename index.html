@@ -1,928 +1,895 @@
 <!DOCTYPE html>
-<html class="light" lang="ko">
+<html lang="ko">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TravelApp – 일정 계획</title>
+  <title>TravelApp</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet"/>
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
   <script>
-    tailwind.config = {
-      theme: { extend: {
-        colors: {
-          primary: "#0f57d0", "primary-container": "#4e83fe", "primary-dim": "#004bbc",
-          surface: "#faf8fe", "surface-container": "#ededf6", "surface-container-low": "#f4f3fa",
-          "surface-container-high": "#e7e7f1", "surface-container-highest": "#e1e2ed",
-          "on-surface": "#30323b", "on-surface-variant": "#5d5f68",
-          outline: "#797a84", "outline-variant": "#b0b1bc",
-          tertiary: "#6c567f", "tertiary-container": "#e8cdfd",
-        },
-        fontFamily: { sans: ["Inter", "sans-serif"] },
-      }},
-    }
+    tailwind.config = { theme: { extend: {
+      colors: {
+        primary:"#0f57d0","primary-c":"#4e83fe",
+        surface:"#faf8fe","sc":"#ededf6","scl":"#f4f3fa","sch":"#e7e7f1","scx":"#e1e2ed",
+        "os":"#30323b","osv":"#5d5f68",outline:"#797a84","ov":"#b0b1bc",
+        tertiary:"#6c567f","tc":"#e8cdfd",
+      },
+      fontFamily:{ sans:["Inter","sans-serif"] }
+    }}}
   </script>
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #faf8fe; height: 100dvh; overflow: hidden; }
-    .ms { font-family: 'Material Symbols Outlined'; font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
-      display:inline-block; line-height:1; text-transform:none; white-space:nowrap; direction:ltr; }
-    .ms-fill { font-variation-settings: 'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
-    #map { width:100%; height:100%; }
-    .maplibregl-ctrl-attrib, .maplibregl-ctrl-logo { display:none!important; }
-    .maplibregl-popup-content { border-radius:12px!important; padding:10px 14px!important;
-      font-family:Inter,sans-serif!important; box-shadow:0 8px 24px rgba(15,87,208,0.18)!important; }
-    .maplibregl-popup-tip { display:none!important; }
-    .sheet { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); }
-    .sheet-hidden { transform: translateY(100%); }
-    .overlay { background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-    .fade-up { animation: fadeUp 0.22s ease-out both; }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .spinner { animation: spin 0.8s linear infinite; }
-    .drag-handle { width:36px; height:4px; background:#d1d5db; border-radius:9999px; margin:10px auto; }
-    input[type=range] { accent-color: #0f57d0; }
-    .place-card { transition: transform 0.15s; }
-    .place-card:active { transform: scale(0.98); }
-    .marker-pin {
-      width:32px; height:32px; border-radius:50% 50% 50% 0; transform:rotate(-45deg);
-      display:flex; align-items:center; justify-content:center;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.25);
-    }
-    .marker-num { transform:rotate(45deg); font-size:12px; font-weight:700; color:white; }
-    .tab-indicator { transition: left 0.25s cubic-bezier(0.4,0,0.2,1), width 0.25s; }
-    ::-webkit-scrollbar { width:0; height:0; }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{font-family:'Inter',sans-serif;background:#faf8fe;height:100dvh;overflow:hidden;color:#30323b}
+    .ms{font-family:'Material Symbols Outlined';font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+      display:inline-block;line-height:1;text-transform:none;white-space:nowrap;direction:ltr;vertical-align:middle}
+    .ms1{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+    #map{width:100%;height:100%}
+    .maplibregl-ctrl-attrib,.maplibregl-ctrl-logo,.maplibregl-ctrl-top-right{display:none!important}
+    .maplibregl-popup-content{border-radius:12px!important;padding:10px 14px!important;font-family:Inter,sans-serif!important;box-shadow:0 8px 24px rgba(15,87,208,0.18)!important}
+    .maplibregl-popup-tip{display:none!important}
+    .sheet{transition:transform .35s cubic-bezier(.32,.72,0,1)}
+    .sh{transform:translateY(100%)}
+    .overlay{background:rgba(0,0,0,.45);backdrop-filter:blur(2px)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .fu{animation:fadeUp .2s ease-out both}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spin{animation:spin .8s linear infinite}
+    .drag-h{width:36px;height:4px;background:#e1e2ed;border-radius:9999px;margin:10px auto}
+    input[type=range]{accent-color:#0f57d0}
+    ::-webkit-scrollbar{width:0;height:0}
+    .page{position:absolute;inset:0;overflow-y:auto}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 16px;cursor:pointer;transition:color .15s;border-radius:16px}
+    .nav-item.active{color:#0f57d0;background:#eff4ff}
+    .nav-item.inactive{color:#9ca3af}
+    .tool-card{background:white;border-radius:24px;padding:20px;box-shadow:0 4px 20px rgba(15,87,208,0.06);border:1px solid rgba(177,177,188,0.15)}
+    .chat-room{display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:white;box-shadow:0 2px 12px rgba(15,87,208,0.05);cursor:pointer;transition:transform .15s}
+    .chat-room:active{transform:scale(.98)}
+    .badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:9999px;font-size:11px;font-weight:700}
+    .place-card{background:white;border-radius:24px;padding:16px;box-shadow:0 4px 20px rgba(15,87,208,0.06);border:1px solid rgba(177,177,188,0.1);position:relative}
+    .place-card .actions{position:absolute;top:12px;right:12px;display:flex;gap:4px;opacity:0;transition:opacity .15s}
+    .place-card:hover .actions{opacity:1}
+    .icon-btn{width:28px;height:28px;border-radius:9999px;background:#ededf6;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s}
+    .icon-btn:hover{background:#e8f0fe;color:#0f57d0}
+    .section-title{font-size:18px;font-weight:800;letter-spacing:-0.3px;margin-bottom:12px}
+    .tag{display:inline-flex;align-items:center;gap:4px;background:#ededf6;padding:4px 10px;border-radius:9999px;font-size:11px;font-weight:700}
   </style>
 </head>
-<body class="text-on-surface select-none">
+<body>
 
-<!-- ╔═══════════════════════════════════╗ -->
-<!-- ║           MAIN APP                ║ -->
-<!-- ╚═══════════════════════════════════╝ -->
-<div id="app" class="h-dvh flex flex-col overflow-hidden relative">
+<div id="app" style="height:100dvh;display:flex;flex-direction:column;overflow:hidden">
 
-  <!-- ── Top Header ── -->
-  <header class="shrink-0 bg-white/80 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.06)] z-30 px-5 pt-3 pb-0">
-    <div class="flex items-center justify-between mb-3">
+  <!-- ── Top Header ───────────────────────────── -->
+  <header id="main-header" style="flex-shrink:0;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(177,177,188,0.15);padding:12px 20px;z-index:30">
+    <div style="display:flex;align-items:center;justify-content:space-between">
       <div>
-        <p class="text-[10px] font-bold uppercase tracking-widest text-outline">여행 일정</p>
-        <h1 id="trip-name-display" class="text-xl font-extrabold tracking-tight leading-tight cursor-pointer" onclick="editTripName()">나의 여행 ✏️</h1>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#797a84">여행 일정</div>
+        <div id="trip-name-display" style="font-size:19px;font-weight:800;letter-spacing:-.3px;cursor:pointer" onclick="editTripName()">나의 여행 ✏️</div>
       </div>
-      <div class="flex items-center gap-2">
-        <!-- Date -->
-        <button onclick="document.getElementById('date-input').showPicker()" class="flex items-center gap-1.5 bg-surface-container px-3 py-1.5 rounded-full text-sm font-semibold text-on-surface hover:bg-surface-container-high transition-colors">
-          <span class="ms text-primary" style="font-size:16px;">calendar_today</span>
-          <span id="date-display">오늘</span>
-          <input id="date-input" type="date" class="sr-only" onchange="onDateChange(this.value)"/>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="document.getElementById('date-input').showPicker()" style="display:flex;align-items:center;gap:6px;background:#ededf6;padding:6px 12px;border-radius:9999px;border:none;font-size:13px;font-weight:600;cursor:pointer">
+          <span class="ms" style="font-size:16px;color:#0f57d0">calendar_today</span><span id="date-display">오늘</span>
+          <input id="date-input" type="date" style="display:none" onchange="onDateChange(this.value)"/>
         </button>
-        <!-- Transport mode -->
-        <button id="transport-btn" onclick="cycleTransport()" class="flex items-center gap-1.5 bg-primary/10 px-3 py-1.5 rounded-full text-sm font-bold text-primary hover:bg-primary/20 transition-colors">
-          <span id="transport-icon" class="ms" style="font-size:16px;">directions_transit</span>
-          <span id="transport-label">대중교통</span>
+        <button onclick="cycleTransport()" style="display:flex;align-items:center;gap:6px;background:#e8f0fe;padding:6px 12px;border-radius:9999px;border:none;font-size:13px;font-weight:700;color:#0f57d0;cursor:pointer">
+          <span id="transport-icon" class="ms" style="font-size:16px">directions_transit</span><span id="transport-label">대중교통</span>
         </button>
       </div>
-    </div>
-    <!-- Tab bar -->
-    <div class="flex relative">
-      <button onclick="switchTab('timeline')" class="tab-btn flex-1 py-2.5 text-sm font-bold text-center transition-colors" data-tab="timeline">
-        <span class="ms mr-1" style="font-size:15px;">list_alt</span>일정
-      </button>
-      <button onclick="switchTab('map')" class="tab-btn flex-1 py-2.5 text-sm font-bold text-center transition-colors" data-tab="map">
-        <span class="ms mr-1" style="font-size:15px;">map</span>지도
-      </button>
-      <div id="tab-indicator" class="tab-indicator absolute bottom-0 h-0.5 bg-primary rounded-full"></div>
     </div>
   </header>
 
-  <!-- ── Content Area ── -->
-  <main class="flex-1 overflow-hidden relative">
+  <!-- ── Content (pages) ──────────────────────── -->
+  <div style="flex:1;overflow:hidden;position:relative">
 
-    <!-- TIMELINE TAB -->
-    <div id="view-timeline" class="absolute inset-0 overflow-y-auto pb-44">
+    <!-- ════════ PAGE: 홈 ════════ -->
+    <div id="page-home" class="page" style="padding-bottom:100px">
 
-      <!-- Empty state -->
-      <div id="empty-state" class="flex flex-col items-center justify-center h-full px-8 text-center">
-        <div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-          <span class="ms text-primary" style="font-size:44px;">travel_explore</span>
+      <!-- Map (sticky top) -->
+      <div style="height:260px;position:sticky;top:0;z-index:10;flex-shrink:0">
+        <div id="map" style="width:100%;height:100%"></div>
+        <!-- Add hint -->
+        <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);backdrop-filter:blur(8px);padding:6px 14px;border-radius:9999px;font-size:11px;font-weight:600;color:#5d5f68;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.1)">
+          <span class="ms" style="font-size:13px;color:#0f57d0;vertical-align:middle">touch_app</span> 지도를 탭해서 장소 추가
         </div>
-        <h2 class="text-xl font-extrabold mb-2">어디로 가시나요?</h2>
-        <p class="text-on-surface-variant text-sm leading-relaxed mb-8">+ 버튼을 눌러 장소를 추가하면<br/>비용, 이동시간, 경로를 자동으로 계산해드려요</p>
-        <button onclick="openAddSheet()" class="bg-primary text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-primary/30 active:scale-95 transition-all">
-          <span class="ms">add_location_alt</span>첫 장소 추가하기
-        </button>
+        <!-- Zoom -->
+        <div style="position:absolute;bottom:10px;right:10px;display:flex;flex-direction:column;gap:4px">
+          <button onclick="map.zoomIn({duration:200})" style="width:36px;height:36px;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border:none;border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.12)"><span class="ms">add</span></button>
+          <button onclick="map.zoomOut({duration:200})" style="width:36px;height:36px;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border:none;border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.12)"><span class="ms">remove</span></button>
+        </div>
       </div>
 
-      <!-- Timeline content (rendered by JS) -->
-      <div id="timeline-content" class="hidden px-5 pt-4 space-y-0">
-        <!-- Start time row -->
-        <div class="flex items-center gap-3 mb-2">
-          <div class="w-10 h-10 bg-surface-container rounded-2xl flex items-center justify-center shrink-0">
-            <span class="ms text-outline" style="font-size:18px;">schedule</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-outline uppercase tracking-wider">출발</span>
-            <button onclick="editStartTime()" class="text-sm font-bold text-primary hover:underline" id="start-time-btn">09:00</button>
-          </div>
+      <!-- Summary bar -->
+      <div id="summary-bar" style="display:none;background:white;padding:12px 20px;border-bottom:1px solid #e7e7f1">
+        <div style="display:flex;justify-content:space-around">
+          <div style="text-align:center"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#797a84">장소</div><div id="sum-places" style="font-size:16px;font-weight:800">0</div></div>
+          <div style="width:1px;background:#e7e7f1"></div>
+          <div style="text-align:center"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#797a84">소요시간</div><div id="sum-time" style="font-size:16px;font-weight:800;color:#0f57d0">-</div></div>
+          <div style="width:1px;background:#e7e7f1"></div>
+          <div style="text-align:center"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#797a84">예상비용</div><div id="sum-cost" style="font-size:16px;font-weight:800">₩0</div></div>
+          <div style="width:1px;background:#e7e7f1"></div>
+          <div style="text-align:center"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#797a84">거리</div><div id="sum-dist" style="font-size:16px;font-weight:800">0km</div></div>
         </div>
-        <div id="timeline-items"></div>
+      </div>
 
-        <!-- Optimize button -->
-        <div class="pt-6 pb-4">
-          <button onclick="optimizeRoute()" class="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/25 active:scale-[0.98] transition-all">
+      <!-- Timeline -->
+      <div id="timeline-area" style="padding:16px 20px 0">
+        <!-- Empty state -->
+        <div id="empty-state" style="text-align:center;padding:48px 20px">
+          <div style="width:80px;height:80px;background:#e8f0fe;border-radius:9999px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+            <span class="ms" style="font-size:38px;color:#0f57d0">travel_explore</span>
+          </div>
+          <div style="font-size:18px;font-weight:800;margin-bottom:8px">어디로 가시나요?</div>
+          <div style="font-size:13px;color:#797a84;line-height:1.6;margin-bottom:20px">+ 버튼이나 지도를 탭해서 장소를 추가하면<br>비용·시간·경로를 자동 계산해 드려요</div>
+          <button onclick="openAddSheet()" style="background:#0f57d0;color:white;border:none;padding:12px 24px;border-radius:16px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(15,87,208,.3)">
+            <span class="ms">add_location_alt</span>첫 장소 추가
+          </button>
+        </div>
+        <!-- Timeline items -->
+        <div id="timeline-items" style="display:none;padding-bottom:8px"></div>
+        <!-- Optimize btn -->
+        <div id="optimize-wrap" style="display:none;padding:16px 0 0">
+          <button onclick="optimizeRoute()" style="width:100%;padding:16px;background:linear-gradient(135deg,#0f57d0,#4e83fe);color:white;border:none;border-radius:18px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 24px rgba(15,87,208,.25)">
             <span class="ms">auto_awesome</span>AI 경로 최적화
           </button>
         </div>
+        <div style="height:80px"></div>
       </div>
     </div>
 
-    <!-- MAP TAB -->
-    <div id="view-map" class="absolute inset-0 hidden">
-      <div id="map"></div>
-      <!-- Map hint -->
-      <div class="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-md text-xs font-semibold text-on-surface-variant flex items-center gap-1.5">
-        <span class="ms text-primary" style="font-size:14px;">touch_app</span>
-        지도를 탭해서 장소 추가
-      </div>
-      <!-- Map place list (mini) -->
-      <div id="map-place-list" class="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl rounded-t-3xl shadow-2xl max-h-52 overflow-y-auto">
-        <div class="drag-handle"></div>
-        <div id="map-places" class="px-4 pb-4 space-y-2"></div>
+    <!-- ════════ PAGE: 여행정보 ════════ -->
+    <div id="page-info" class="page" style="display:none;padding-bottom:100px">
+      <div style="padding:20px">
+
+        <!-- Shared itineraries -->
+        <div style="margin-bottom:28px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div class="section-title">✈️ 일정 공유</div>
+            <button style="font-size:13px;font-weight:600;color:#0f57d0;background:none;border:none;cursor:pointer">+ 내 일정 공유</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px" id="shared-list"></div>
+        </div>
+
+        <!-- Chat rooms -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div class="section-title">💬 여행자 채팅방</div>
+            <button onclick="createRoom()" style="font-size:13px;font-weight:600;color:#0f57d0;background:none;border:none;cursor:pointer">+ 방 만들기</button>
+          </div>
+          <!-- Region filter -->
+          <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:14px" id="room-filter"></div>
+          <div style="display:flex;flex-direction:column;gap:10px" id="room-list"></div>
+        </div>
       </div>
     </div>
 
-  </main>
+    <!-- ════════ PAGE: 여행도구 ════════ -->
+    <div id="page-tools" class="page" style="display:none;padding-bottom:100px">
+      <div style="padding:20px;display:flex;flex-direction:column;gap:20px">
 
-  <!-- ── Summary Bar ── -->
-  <div id="summary-bar" class="hidden shrink-0 bg-white border-t border-outline-variant/20 px-5 py-3 z-20">
-    <div class="flex items-center justify-around">
-      <div class="text-center">
-        <p class="text-[10px] font-bold uppercase tracking-wider text-outline">장소</p>
-        <p class="text-base font-extrabold text-on-surface" id="sum-places">0개</p>
-      </div>
-      <div class="w-px h-8 bg-outline-variant/30"></div>
-      <div class="text-center">
-        <p class="text-[10px] font-bold uppercase tracking-wider text-outline">소요시간</p>
-        <p class="text-base font-extrabold text-primary" id="sum-time">0시간</p>
-      </div>
-      <div class="w-px h-8 bg-outline-variant/30"></div>
-      <div class="text-center">
-        <p class="text-[10px] font-bold uppercase tracking-wider text-outline">예상비용</p>
-        <p class="text-base font-extrabold text-on-surface" id="sum-cost">₩0</p>
-      </div>
-      <div class="w-px h-8 bg-outline-variant/30"></div>
-      <div class="text-center">
-        <p class="text-[10px] font-bold uppercase tracking-wider text-outline">거리</p>
-        <p class="text-base font-extrabold text-on-surface" id="sum-dist">0km</p>
-      </div>
-    </div>
-  </div>
+        <!-- Weather -->
+        <div class="tool-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:16px;font-weight:800">🌤 여행지 날씨</div>
+            <div style="display:flex;gap:6px;align-items:center;background:#ededf6;border-radius:12px;padding:4px 12px">
+              <span class="ms" style="font-size:16px;color:#797a84">search</span>
+              <input id="weather-city" type="text" placeholder="도시 입력" style="border:none;background:transparent;font-size:13px;font-weight:600;width:80px;outline:none" onkeydown="if(event.key==='Enter')fetchWeather(this.value)"/>
+              <button onclick="fetchWeather(document.getElementById('weather-city').value)" style="border:none;background:none;cursor:pointer;color:#0f57d0;font-size:13px;font-weight:700">검색</button>
+            </div>
+          </div>
+          <div id="weather-result" style="text-align:center;color:#797a84;font-size:13px">도시를 검색해 날씨를 확인하세요</div>
+        </div>
 
-  <!-- ── Bottom Nav ── -->
-  <nav class="shrink-0 flex justify-around items-center px-4 pb-5 pt-2 bg-white/90 backdrop-blur-2xl border-t border-outline-variant/10 z-20">
-    <div class="flex flex-col items-center gap-0.5 text-primary cursor-pointer">
-      <span class="ms ms-fill" style="font-size:22px;">home</span>
-      <span class="text-[10px] font-bold uppercase">홈</span>
+        <!-- Timezone -->
+        <div class="tool-card">
+          <div style="font-size:16px;font-weight:800;margin-bottom:14px">🕐 시차 비교</div>
+          <div id="timezone-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+          <div style="margin-top:12px;font-size:11px;color:#797a84;text-align:center" id="tz-update"></div>
+        </div>
+
+        <!-- Currency -->
+        <div class="tool-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:16px;font-weight:800">💱 환율</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:13px;color:#797a84">기준</span>
+              <select id="base-currency" onchange="fetchRates()" style="border:none;background:#ededf6;border-radius:8px;padding:4px 8px;font-size:13px;font-weight:700;color:#30323b;cursor:pointer">
+                <option>KRW</option><option>USD</option><option>EUR</option><option>JPY</option>
+              </select>
+            </div>
+          </div>
+          <div id="currency-input-wrap" style="display:flex;align-items:center;gap:8px;background:#ededf6;border-radius:14px;padding:10px 14px;margin-bottom:14px">
+            <span id="base-symbol" style="font-size:18px;font-weight:800;color:#0f57d0">₩</span>
+            <input id="currency-amount" type="number" value="10000" style="flex:1;border:none;background:transparent;font-size:18px;font-weight:700;outline:none" oninput="convertCurrency()"/>
+          </div>
+          <div id="currency-result" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+
+        <!-- Packing checklist -->
+        <div class="tool-card">
+          <div style="font-size:16px;font-weight:800;margin-bottom:14px">🧳 준비물 체크리스트</div>
+          <div id="checklist-container"></div>
+          <button onclick="addCheckItem()" style="width:100%;margin-top:12px;padding:10px;background:#ededf6;border:none;border-radius:12px;font-size:13px;font-weight:700;color:#5d5f68;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+            <span class="ms" style="font-size:16px">add</span>항목 추가
+          </button>
+        </div>
+
+        <!-- Travel tips -->
+        <div class="tool-card">
+          <div style="font-size:16px;font-weight:800;margin-bottom:14px">⚠️ 여행 주의사항</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="tips-filter"></div>
+          <div id="tips-content" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+      </div>
     </div>
-    <div class="flex flex-col items-center gap-0.5 text-slate-400 cursor-pointer">
-      <span class="ms" style="font-size:22px;">explore</span>
-      <span class="text-[10px] font-medium uppercase">탐색</span>
+
+    <!-- ════════ PAGE: 프로필 ════════ -->
+    <div id="page-profile" class="page" style="display:none;padding:40px 20px;text-align:center">
+      <div style="width:80px;height:80px;background:linear-gradient(135deg,#0f57d0,#4e83fe);border-radius:9999px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <span class="ms" style="font-size:36px;color:white">person</span>
+      </div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:4px">여행자</div>
+      <div style="font-size:13px;color:#797a84;margin-bottom:24px">프로필을 설정하세요</div>
+      <button style="background:#0f57d0;color:white;border:none;padding:12px 28px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer">로그인 / 가입</button>
     </div>
-    <div class="flex flex-col items-center gap-0.5 text-slate-400 cursor-pointer">
-      <span class="ms" style="font-size:22px;">luggage</span>
-      <span class="text-[10px] font-medium uppercase">여행</span>
+
+  </div><!-- end content -->
+
+  <!-- ── Bottom Nav ────────────────────────────── -->
+  <nav style="flex-shrink:0;display:flex;justify-content:space-around;align-items:center;padding:8px 8px 20px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-top:1px solid rgba(177,177,188,.15);z-index:30">
+    <div class="nav-item active" id="nav-home" onclick="showPage('home')">
+      <span class="ms ms1" style="font-size:22px">home</span>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.05em">홈</span>
     </div>
-    <div class="flex flex-col items-center gap-0.5 text-slate-400 cursor-pointer">
-      <span class="ms" style="font-size:22px;">person</span>
-      <span class="text-[10px] font-medium uppercase">프로필</span>
+    <div class="nav-item inactive" id="nav-info" onclick="showPage('info')">
+      <span class="ms" style="font-size:22px">people</span>
+      <span style="font-size:10px;font-weight:600;letter-spacing:.05em">여행정보</span>
+    </div>
+    <div class="nav-item inactive" id="nav-tools" onclick="showPage('tools')">
+      <span class="ms" style="font-size:22px">travel_explore</span>
+      <span style="font-size:10px;font-weight:600;letter-spacing:.05em">여행도구</span>
+    </div>
+    <div class="nav-item inactive" id="nav-profile" onclick="showPage('profile')">
+      <span class="ms" style="font-size:22px">person</span>
+      <span style="font-size:10px;font-weight:600;letter-spacing:.05em">프로필</span>
     </div>
   </nav>
-
-  <!-- FAB -->
-  <button onclick="openAddSheet()" id="fab"
-    class="hidden fixed right-5 bottom-24 w-14 h-14 bg-primary text-white rounded-2xl shadow-xl shadow-primary/40 flex items-center justify-center active:scale-90 transition-all z-30">
-    <span class="ms" style="font-size:28px;">add</span>
-  </button>
-
 </div>
 
-<!-- ╔═══════════════════════════════════╗ -->
-<!-- ║        ADD PLACE SHEET            ║ -->
-<!-- ╚═══════════════════════════════════╝ -->
-<div id="overlay-add" class="fixed inset-0 z-50 hidden">
-  <div class="overlay absolute inset-0" onclick="closeAddSheet()"></div>
-  <div id="sheet-add" class="sheet sheet-hidden absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl flex flex-col" style="max-height:88dvh">
-    <div class="drag-handle cursor-pointer shrink-0" onclick="closeAddSheet()"></div>
-    <div class="px-5 pb-3 shrink-0">
-      <h2 class="text-lg font-extrabold mb-3">장소 추가</h2>
-      <div class="flex items-center gap-3 bg-surface-container rounded-2xl px-4 py-3 focus-within:bg-white focus-within:shadow-md transition-all">
-        <span class="ms text-outline" style="font-size:20px;">search</span>
-        <input id="add-search-input" type="text" placeholder="장소, 도시, 음식점 검색..."
-          class="flex-1 bg-transparent border-none focus:ring-0 p-0 text-sm font-medium placeholder:text-outline/60"
-          oninput="onAddSearch(this.value)" onkeydown="if(e.key==='Enter')onAddSearch(this.value)"/>
-        <button id="add-search-clear" class="hidden" onclick="clearAddSearch()">
-          <span class="ms text-outline" style="font-size:18px;">close</span>
-        </button>
+<!-- FAB -->
+<button onclick="openAddSheet()" id="fab" style="position:fixed;right:20px;bottom:88px;width:52px;height:52px;background:#0f57d0;color:white;border:none;border-radius:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(15,87,208,.4);z-index:29;transition:transform .15s">
+  <span class="ms" style="font-size:26px">add</span>
+</button>
+
+<!-- ╔═══ ADD PLACE SHEET ════╗ -->
+<div id="ov-add" style="display:none;position:fixed;inset:0;z-index:50">
+  <div class="overlay" style="position:absolute;inset:0" onclick="closeAddSheet()"></div>
+  <div id="sh-add" class="sheet sh" style="position:absolute;bottom:0;left:0;right:0;background:white;border-radius:28px 28px 0 0;max-height:88dvh;display:flex;flex-direction:column">
+    <div class="drag-h" style="cursor:pointer" onclick="closeAddSheet()"></div>
+    <div style="padding:0 20px 12px;flex-shrink:0">
+      <div style="font-size:17px;font-weight:800;margin-bottom:12px">장소 추가</div>
+      <div style="display:flex;align-items:center;gap:10px;background:#ededf6;border-radius:16px;padding:12px 16px">
+        <span class="ms" style="color:#797a84;font-size:20px">search</span>
+        <input id="add-input" type="text" placeholder="장소, 음식점, 관광지 검색..." style="flex:1;border:none;background:transparent;font-size:14px;font-weight:500;outline:none" oninput="onAddSearch(this.value)"/>
+        <button id="add-clear" style="display:none;border:none;background:none;cursor:pointer" onclick="clearAddSearch()"><span class="ms" style="color:#797a84;font-size:18px">close</span></button>
       </div>
     </div>
-    <!-- Search results -->
-    <div id="add-results" class="flex-1 overflow-y-auto px-5 pb-6">
-      <div id="add-loading" class="hidden justify-center py-8">
-        <span class="ms spinner text-primary" style="font-size:28px;">progress_activity</span>
-      </div>
-      <div id="add-list" class="space-y-2"></div>
-      <!-- Recent / popular suggestions -->
-      <div id="add-suggestions">
-        <p class="text-xs font-bold uppercase tracking-wider text-outline mb-3">인기 카테고리로 검색</p>
-        <div class="grid grid-cols-3 gap-2">
-          <button onclick="document.getElementById('add-search-input').value='맛집';onAddSearch('맛집')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
-            <span class="ms text-orange-500" style="font-size:22px;">restaurant</span>
-            <span class="text-xs font-semibold">식당</span>
-          </button>
-          <button onclick="document.getElementById('add-search-input').value='카페';onAddSearch('카페')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
-            <span class="ms text-amber-700" style="font-size:22px;">local_cafe</span>
-            <span class="text-xs font-semibold">카페</span>
-          </button>
-          <button onclick="document.getElementById('add-search-input').value='관광명소';onAddSearch('관광명소')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
-            <span class="ms text-primary" style="font-size:22px;">photo_camera</span>
-            <span class="text-xs font-semibold">관광지</span>
-          </button>
-          <button onclick="document.getElementById('add-search-input').value='박물관';onAddSearch('박물관')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
-            <span class="ms text-red-500" style="font-size:22px;">museum</span>
-            <span class="text-xs font-semibold">박물관</span>
-          </button>
-          <button onclick="document.getElementById('add-search-input').value='공원';onAddSearch('공원')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
-            <span class="ms text-green-600" style="font-size:22px;">park</span>
-            <span class="text-xs font-semibold">공원</span>
-          </button>
-          <button onclick="document.getElementById('add-search-input').value='쇼핑몰';onAddSearch('쇼핑몰')" class="bg-surface-container rounded-2xl py-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors">
-            <span class="ms text-purple-500" style="font-size:22px;">shopping_bag</span>
-            <span class="text-xs font-semibold">쇼핑</span>
-          </button>
-        </div>
+    <div style="flex:1;overflow-y:auto;padding:0 20px 24px">
+      <div id="add-loading" style="display:none;justify-content:center;padding:32px"><span class="ms spin" style="font-size:28px;color:#0f57d0">progress_activity</span></div>
+      <div id="add-list"></div>
+      <div id="add-cats">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#797a84;margin-bottom:12px">카테고리로 검색</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="cat-btns"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ╔═══════════════════════════════════╗ -->
-<!-- ║       PLACE DETAIL SHEET          ║ -->
-<!-- ╚═══════════════════════════════════╝ -->
-<div id="overlay-detail" class="fixed inset-0 z-60 hidden" style="z-index:60">
-  <div class="overlay absolute inset-0" onclick="closeDetailSheet()"></div>
-  <div id="sheet-detail" class="sheet sheet-hidden absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl" style="max-height:92dvh;overflow-y:auto">
-    <div class="drag-handle cursor-pointer" onclick="closeDetailSheet()"></div>
-    <div class="px-5 pb-8">
-      <!-- Place name -->
-      <div class="mb-5">
-        <p class="text-xs font-bold uppercase tracking-wider text-outline mb-1" id="detail-address">주소</p>
-        <h2 class="text-xl font-extrabold" id="detail-name">장소 이름</h2>
+<!-- ╔═══ DETAIL SHEET ════╗ -->
+<div id="ov-detail" style="display:none;position:fixed;inset:0;z-index:60">
+  <div class="overlay" style="position:absolute;inset:0" onclick="closeDetailSheet()"></div>
+  <div id="sh-detail" class="sheet sh" style="position:absolute;bottom:0;left:0;right:0;background:white;border-radius:28px 28px 0 0;max-height:92dvh;overflow-y:auto">
+    <div class="drag-h" onclick="closeDetailSheet()"></div>
+    <div style="padding:0 20px 32px">
+      <div style="margin-bottom:16px">
+        <div id="d-addr" style="font-size:11px;font-weight:700;color:#797a84;margin-bottom:4px"></div>
+        <div id="d-name" style="font-size:20px;font-weight:800"></div>
       </div>
       <!-- Category -->
-      <div class="mb-5">
-        <p class="text-sm font-bold text-on-surface-variant mb-2">카테고리</p>
-        <div id="detail-categories" class="flex gap-2 flex-wrap"></div>
+      <div style="margin-bottom:18px">
+        <div style="font-size:13px;font-weight:700;color:#5d5f68;margin-bottom:8px">카테고리</div>
+        <div id="d-cats" style="display:flex;flex-wrap:wrap;gap:8px"></div>
       </div>
       <!-- Duration -->
-      <div class="mb-5">
-        <div class="flex justify-between items-center mb-2">
-          <p class="text-sm font-bold text-on-surface-variant">관람/체류 시간</p>
-          <span class="text-sm font-extrabold text-primary" id="detail-duration-label">60분</span>
+      <div style="margin-bottom:18px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:700;color:#5d5f68">관람/체류 시간</div>
+          <div id="d-dur-label" style="font-size:13px;font-weight:800;color:#0f57d0">60분</div>
         </div>
-        <input id="detail-duration" type="range" min="15" max="360" step="15" value="60"
-          class="w-full h-2 rounded-full" oninput="updateDurationLabel(this.value)"/>
-        <div class="flex justify-between text-[10px] text-outline mt-1">
-          <span>15분</span><span>1시간</span><span>2시간</span><span>3시간</span><span>6시간</span>
-        </div>
+        <input id="d-dur" type="range" min="15" max="360" step="15" value="60" style="width:100%" oninput="document.getElementById('d-dur-label').textContent=fmtDur(+this.value)"/>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#797a84;margin-top:4px"><span>15분</span><span>1h</span><span>2h</span><span>3h</span><span>6h</span></div>
       </div>
       <!-- Cost -->
-      <div class="mb-5">
-        <p class="text-sm font-bold text-on-surface-variant mb-2">예상 비용</p>
-        <div class="flex items-center gap-2 bg-surface-container rounded-2xl px-4 py-3">
-          <span class="text-on-surface-variant font-bold">₩</span>
-          <input id="detail-cost" type="number" placeholder="0" min="0" step="1000"
-            class="flex-1 bg-transparent border-none focus:ring-0 p-0 text-base font-bold text-on-surface placeholder:text-outline/40"/>
+      <div style="margin-bottom:18px">
+        <div style="font-size:13px;font-weight:700;color:#5d5f68;margin-bottom:8px">예상 비용</div>
+        <div style="display:flex;align-items:center;gap:8px;background:#ededf6;border-radius:14px;padding:10px 14px">
+          <span style="font-weight:800;color:#0f57d0">₩</span>
+          <input id="d-cost" type="number" placeholder="0" style="flex:1;border:none;background:transparent;font-size:17px;font-weight:700;outline:none"/>
         </div>
-        <!-- Cost presets -->
-        <div class="flex gap-2 mt-2 flex-wrap">
-          <button onclick="setCost(0)"     class="cost-preset px-3 py-1 bg-surface-container rounded-full text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors">무료</button>
-          <button onclick="setCost(5000)"  class="cost-preset px-3 py-1 bg-surface-container rounded-full text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors">₩5,000</button>
-          <button onclick="setCost(10000)" class="cost-preset px-3 py-1 bg-surface-container rounded-full text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors">₩10,000</button>
-          <button onclick="setCost(20000)" class="cost-preset px-3 py-1 bg-surface-container rounded-full text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors">₩20,000</button>
-          <button onclick="setCost(50000)" class="cost-preset px-3 py-1 bg-surface-container rounded-full text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors">₩50,000</button>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button onclick="document.getElementById('d-cost').value=0" style="padding:4px 12px;background:#ededf6;border:none;border-radius:9999px;font-size:12px;font-weight:700;cursor:pointer">무료</button>
+          <button onclick="document.getElementById('d-cost').value=5000" style="padding:4px 12px;background:#ededf6;border:none;border-radius:9999px;font-size:12px;font-weight:700;cursor:pointer">₩5,000</button>
+          <button onclick="document.getElementById('d-cost').value=15000" style="padding:4px 12px;background:#ededf6;border:none;border-radius:9999px;font-size:12px;font-weight:700;cursor:pointer">₩15,000</button>
+          <button onclick="document.getElementById('d-cost').value=30000" style="padding:4px 12px;background:#ededf6;border:none;border-radius:9999px;font-size:12px;font-weight:700;cursor:pointer">₩30,000</button>
+          <button onclick="document.getElementById('d-cost').value=50000" style="padding:4px 12px;background:#ededf6;border:none;border-radius:9999px;font-size:12px;font-weight:700;cursor:pointer">₩50,000</button>
         </div>
       </div>
       <!-- Note -->
-      <div class="mb-6">
-        <p class="text-sm font-bold text-on-surface-variant mb-2">메모</p>
-        <textarea id="detail-note" placeholder="예약 번호, 입장 시간, 준비물 등..."
-          class="w-full bg-surface-container rounded-2xl px-4 py-3 text-sm border-none focus:ring-primary/30 focus:ring-2 resize-none" rows="2"></textarea>
+      <div style="margin-bottom:24px">
+        <div style="font-size:13px;font-weight:700;color:#5d5f68;margin-bottom:8px">메모</div>
+        <textarea id="d-note" placeholder="예약번호, 운영시간, 준비물..." style="width:100%;background:#ededf6;border:none;border-radius:14px;padding:12px 14px;font-size:13px;resize:none;outline:none;font-family:Inter,sans-serif" rows="2"></textarea>
       </div>
-      <!-- Confirm button -->
-      <button onclick="confirmPlace()" class="w-full py-4 bg-primary text-white rounded-2xl font-extrabold text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-[0.98] transition-all">
+      <button onclick="confirmPlace()" style="width:100%;padding:16px;background:#0f57d0;color:white;border:none;border-radius:18px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 24px rgba(15,87,208,.3)">
         <span class="ms">check_circle</span>일정에 추가
       </button>
     </div>
   </div>
 </div>
 
-<!-- ╔═══════════════════════════════════╗ -->
-<!-- ║         TOAST                     ║ -->
-<!-- ╚═══════════════════════════════════╝ -->
-<div id="toast" class="fixed top-24 left-1/2 -translate-x-1/2 z-[100] hidden">
-  <div class="bg-slate-900 text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-xl flex items-center gap-2 fade-up">
-    <span id="toast-icon" class="ms" style="font-size:18px;">check_circle</span>
-    <span id="toast-msg"></span>
+<!-- Toast -->
+<div id="toast" style="display:none;position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:100">
+  <div style="background:#1e293b;color:white;padding:10px 18px;border-radius:16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.2)" class="fu">
+    <span id="toast-icon" class="ms" style="font-size:18px">check_circle</span><span id="toast-msg"></span>
   </div>
 </div>
 
 <script>
-// ════════════════════════════════════════════
-//  CONSTANTS
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════
 const CATS = {
-  '관광지': { icon:'photo_camera',    color:'#0f57d0', bg:'#e8f0fe', defaultCost:15000, defaultDur:90  },
-  '식당':   { icon:'restaurant',      color:'#e67e22', bg:'#fef3e2', defaultCost:30000, defaultDur:60  },
-  '카페':   { icon:'local_cafe',      color:'#6f4e37', bg:'#f5ece8', defaultCost:10000, defaultDur:45  },
-  '쇼핑':   { icon:'shopping_bag',    color:'#8e44ad', bg:'#f4e6fd', defaultCost:50000, defaultDur:60  },
-  '박물관': { icon:'museum',          color:'#c0392b', bg:'#fde8e8', defaultCost:10000, defaultDur:120 },
-  '공원':   { icon:'park',            color:'#16a085', bg:'#e0f5f2', defaultCost:0,     defaultDur:60  },
-  '숙소':   { icon:'hotel',           color:'#2980b9', bg:'#e3f0fa', defaultCost:100000,defaultDur:0   },
-  '기타':   { icon:'place',           color:'#7f8c8d', bg:'#f0f0f0', defaultCost:0,     defaultDur:60  },
+  '관광지':{ icon:'photo_camera',  color:'#0f57d0', bg:'#e8f0fe', dc:15000, dd:90 },
+  '식당':  { icon:'restaurant',    color:'#e67e22', bg:'#fef3e2', dc:30000, dd:60 },
+  '카페':  { icon:'local_cafe',    color:'#6f4e37', bg:'#f5ece8', dc:10000, dd:45 },
+  '쇼핑':  { icon:'shopping_bag',  color:'#8e44ad', bg:'#f4e6fd', dc:50000, dd:60 },
+  '박물관':{ icon:'museum',        color:'#c0392b', bg:'#fde8e8', dc:10000, dd:120},
+  '공원':  { icon:'park',          color:'#16a085', bg:'#e0f5f2', dc:0,     dd:60 },
+  '숙소':  { icon:'hotel',         color:'#2980b9', bg:'#e3f0fa', dc:100000,dd:0  },
+  '기타':  { icon:'place',         color:'#7f8c8d', bg:'#f0f0f0', dc:0,     dd:60 },
 };
 
-const TRANSPORT_MODES = [
-  { id:'transit', label:'대중교통', icon:'directions_transit', speed:22 },
-  { id:'walk',    label:'도보',     icon:'directions_walk',    speed:4.5 },
-  { id:'car',     label:'자동차',   icon:'directions_car',     speed:30 },
-  { id:'taxi',    label:'택시',     icon:'local_taxi',         speed:28 },
+const TRANSPORTS = [
+  {id:'transit',label:'대중교통',icon:'directions_transit',speed:22},
+  {id:'walk',   label:'도보',    icon:'directions_walk',   speed:4.5},
+  {id:'car',    label:'자동차',  icon:'directions_car',    speed:30},
+  {id:'taxi',   label:'택시',    icon:'local_taxi',        speed:28},
 ];
 
-// ════════════════════════════════════════════
-//  STATE
-// ════════════════════════════════════════════
-const state = {
-  places: [],       // { id, name, address, lat, lng, category, duration, cost, note }
-  date: new Date().toISOString().slice(0,10),
-  startTime: '09:00',
-  transportIdx: 0,
-  tripName: '나의 여행',
-  currentTab: 'timeline',
+const TIMEZONES = [
+  {city:'서울',     tz:'Asia/Seoul',           flag:'🇰🇷'},
+  {city:'도쿄',     tz:'Asia/Tokyo',           flag:'🇯🇵'},
+  {city:'베이징',   tz:'Asia/Shanghai',        flag:'🇨🇳'},
+  {city:'방콕',     tz:'Asia/Bangkok',         flag:'🇹🇭'},
+  {city:'두바이',   tz:'Asia/Dubai',           flag:'🇦🇪'},
+  {city:'파리',     tz:'Europe/Paris',         flag:'🇫🇷'},
+  {city:'런던',     tz:'Europe/London',        flag:'🇬🇧'},
+  {city:'뉴욕',     tz:'America/New_York',     flag:'🇺🇸'},
+];
+
+const CURRENCY_META = {
+  KRW:{sym:'₩',name:'원'},USD:{sym:'$',name:'달러'},EUR:{sym:'€',name:'유로'},
+  JPY:{sym:'¥',name:'엔'},CNY:{sym:'¥',name:'위안'},GBP:{sym:'£',name:'파운드'},
+  THB:{sym:'฿',name:'바트'},AED:{sym:'د.إ',name:'디르함'},
 };
 
-let pendingPlace = null;   // place being configured in detail sheet
-let map = null;
-let markers = [];
-let routeLayer = null;
-let searchDebounce = null;
-let toastTimer = null;
+const SHARED_ITINERARIES = [
+  {user:'김민준',avatar:'KM',city:'도쿄',days:4,likes:234,tags:['식도락','쇼핑'],img:'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=300'},
+  {user:'이서연',avatar:'LS',city:'파리',days:7,likes:189,tags:['미술관','카페'],img:'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=300'},
+  {user:'박지호',avatar:'PJ',city:'발리',days:5,likes:312,tags:['자연','힐링'],img:'https://images.unsplash.com/photo-1555993539-1732b0258235?w=300'},
+  {user:'최유진',avatar:'CY',city:'뉴욕',days:6,likes:156,tags:['쇼핑','맛집'],img:'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=300'},
+];
 
-// ════════════════════════════════════════════
-//  UTILITY
-// ════════════════════════════════════════════
-function haversine(lat1,lon1,lat2,lon2) {
-  const R=6371, d2r=Math.PI/180;
-  const dLat=(lat2-lat1)*d2r, dLon=(lon2-lon1)*d2r;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*d2r)*Math.cos(lat2*d2r)*Math.sin(dLon/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
+const CHAT_ROOMS = [
+  {id:1,name:'🇯🇵 도쿄 여행자 모임',region:'일본',members:47,last:'우에노 공원 벚꽃 지금 대박이에요!',time:'2분 전',active:true},
+  {id:2,name:'🇫🇷 파리 한달살기',region:'유럽',members:23,last:'에펠탑 야경 몇시가 제일 좋아요?',time:'15분 전',active:true},
+  {id:3,name:'🇹🇭 방콕 맛집 정보',region:'동남아',members:89,last:'팟타이 맛집 공유합니다~',time:'1시간 전',active:false},
+  {id:4,name:'🇮🇩 발리 서핑 모임',region:'동남아',members:31,last:'쿠타비치 파도 상태 어때요?',time:'3시간 전',active:false},
+  {id:5,name:'🇺🇸 뉴욕 여행 꿀팁',region:'미주',members:62,last:'메트로 패스 어디서 사요?',time:'어제',active:false},
+];
 
-function timeToMin(t) {
-  const [h,m]=t.split(':').map(Number); return h*60+m;
-}
-function minToTime(m) {
-  const h=Math.floor(m/60)%24, min=m%60;
-  return `${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
-}
-function fmtDur(min) {
-  if(min<60) return `${min}분`;
-  const h=Math.floor(min/60), m=min%60;
-  return m>0 ? `${h}시간 ${m}분` : `${h}시간`;
-}
-function fmtCost(n) {
-  if(n===0) return '무료';
-  return '₩'+n.toLocaleString();
-}
-function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+const TIPS_DATA = {
+  '전체':[
+    {icon:'⚠️',title:'여권 유효기간 확인',desc:'여행 출발일 기준 6개월 이상 남아있어야 합니다.'},
+    {icon:'💊',title:'상비약 준비',desc:'소화제, 진통제, 지사제, 일회용 밴드를 챙기세요.'},
+    {icon:'📱',title:'긴급연락처 저장',desc:'현지 경찰(112), 대사관, 여행자 보험사 번호를 저장하세요.'},
+  ],
+  '일본':[
+    {icon:'🗑',title:'쓰레기통이 없어요',desc:'편의점에서 음식을 사도 밖에서 버리기 어렵습니다. 봉투를 준비하세요.'},
+    {icon:'💳',title:'현금 필수',desc:'작은 식당이나 자판기는 현금만 받는 곳이 많습니다.'},
+    {icon:'🚂',title:'전철 에티켓',desc:'전화 통화, 큰 소리는 금물. 우선석은 핸드폰도 끄세요.'},
+  ],
+  '동남아':[
+    {icon:'💧',title:'물 조심',desc:'수돗물은 마시지 마세요. 생수를 구입해 마시세요.'},
+    {icon:'🦟',title:'모기 기피제',desc:'뎅기열 등 모기 매개 질병 예방을 위해 기피제를 사용하세요.'},
+    {icon:'🌶',title:'음식 위생',desc:'길거리 음식은 신선도를 확인하고 익힌 음식 위주로 드세요.'},
+  ],
+  '유럽':[
+    {icon:'🧾',title:'소매치기 주의',desc:'관광 명소에서 가방은 앞으로, 지갑은 앞 주머니에 넣으세요.'},
+    {icon:'🚿',title:'욕실 유료',desc:'일부 국가 공중화장실은 유료입니다. 동전을 준비하세요.'},
+    {icon:'💶',title:'팁 문화',desc:'레스토랑에서는 계산서의 10~15%를 팁으로 남기는 것이 일반적입니다.'},
+  ],
+  '미주':[
+    {icon:'💵',title:'팁은 필수',desc:'레스토랑, 택시, 호텔 등에서 15~20% 팁을 기대합니다.'},
+    {icon:'🏥',title:'의료비 폭탄',desc:'여행자 보험은 필수. 미국 의료비는 엄청나게 비쌉니다.'},
+    {icon:'🚗',title:'대중교통 한계',desc:'뉴욕 외 지역은 렌터카가 거의 필수입니다.'},
+  ],
+};
 
-function showToast(msg, icon='check_circle') {
+const DEFAULT_CHECKLIST = [
+  {cat:'서류',items:[{t:'여권',c:false},{t:'비자',c:false},{t:'항공권',c:false},{t:'여행자보험',c:false}]},
+  {cat:'전자기기',items:[{t:'충전기',c:false},{t:'멀티어댑터',c:false},{t:'보조배터리',c:false}]},
+  {cat:'의류',items:[{t:'여벌 옷',c:false},{t:'운동화',c:false},{t:'우산/우의',c:false}]},
+  {cat:'건강',items:[{t:'상비약',c:false},{t:'마스크',c:false},{t:'선크림',c:false}]},
+];
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+const S = {
+  places:[], date:new Date().toISOString().slice(0,10),
+  startTime:'09:00', transportIdx:0, tripName:'나의 여행',
+  currentPage:'home',
+  checklist: JSON.parse(JSON.stringify(DEFAULT_CHECKLIST)),
+  rates:{}, ratesBase:'KRW',
+};
+let pendingPlace=null, map=null, markers=[], searchTimer=null, toastTimer=null;
+
+// ══════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+function haversine(a,b,c,d){ const R=6371,r=Math.PI/180,dl=(c-a)*r,dm=(d-b)*r,e=Math.sin(dl/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dm/2)**2; return R*2*Math.atan2(Math.sqrt(e),Math.sqrt(1-e)); }
+function t2m(t){ const[h,m]=t.split(':').map(Number); return h*60+m; }
+function m2t(m){ return `${String(Math.floor(m/60)%24).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; }
+function fmtDur(m){ return m<60?`${m}분`:`${Math.floor(m/60)}시간${m%60>0?' '+m%60+'분':''}`; }
+function fmtCost(n){ return n===0?'무료':'₩'+n.toLocaleString(); }
+
+function showToast(msg,icon='check_circle'){
   clearTimeout(toastTimer);
-  const el=document.getElementById('toast');
+  Object.assign(document.getElementById('toast').style,{display:'block'});
   document.getElementById('toast-msg').textContent=msg;
   document.getElementById('toast-icon').textContent=icon;
-  el.classList.remove('hidden');
-  toastTimer=setTimeout(()=>el.classList.add('hidden'),2500);
+  toastTimer=setTimeout(()=>document.getElementById('toast').style.display='none',2500);
 }
 
-// ════════════════════════════════════════════
-//  DATE & TRANSPORT
-// ════════════════════════════════════════════
-function onDateChange(val) {
-  state.date = val;
-  const d=new Date(val);
-  const today=new Date(); today.setHours(0,0,0,0);
-  const sel=new Date(val); sel.setHours(0,0,0,0);
-  const diff=Math.round((sel-today)/(1000*60*60*24));
-  document.getElementById('date-display').textContent =
-    diff===0?'오늘':diff===1?'내일':diff===-1?'어제':
-    `${d.getMonth()+1}/${d.getDate()}`;
+// ══════════════════════════════════════════════
+// PAGE SWITCHING
+// ══════════════════════════════════════════════
+function showPage(page){
+  ['home','info','tools','profile'].forEach(p=>{
+    document.getElementById('page-'+p).style.display=p===page?'block':'none';
+    const ni=document.getElementById('nav-'+p);
+    ni.className='nav-item '+(p===page?'active':'inactive');
+    const ms=ni.querySelector('.ms');
+    if(ms) ms.className='ms'+(p===page?' ms1':'');
+  });
+  document.getElementById('fab').style.display=page==='home'?'flex':'none';
+  S.currentPage=page;
+  if(page==='map'||page==='home') setTimeout(()=>{if(map)map.resize();},100);
+  if(page==='tools'){ renderTimezones(); if(!Object.keys(S.rates).length)fetchRates(); renderChecklist(); renderTips('전체'); }
+  if(page==='info'){ renderSharedList(); renderRooms('전체'); }
 }
 
-function cycleTransport() {
-  state.transportIdx=(state.transportIdx+1)%TRANSPORT_MODES.length;
-  const t=TRANSPORT_MODES[state.transportIdx];
+// ══════════════════════════════════════════════
+// DATE / TRANSPORT
+// ══════════════════════════════════════════════
+function onDateChange(v){
+  S.date=v;
+  const d=new Date(v),t=new Date(); t.setHours(0,0,0,0);
+  const diff=Math.round((new Date(v)-t)/864e5);
+  document.getElementById('date-display').textContent=diff===0?'오늘':diff===1?'내일':diff===-1?'어제':`${d.getMonth()+1}/${d.getDate()}`;
+}
+function cycleTransport(){
+  S.transportIdx=(S.transportIdx+1)%TRANSPORTS.length;
+  const t=TRANSPORTS[S.transportIdx];
   document.getElementById('transport-icon').textContent=t.icon;
   document.getElementById('transport-label').textContent=t.label;
   renderTimeline();
 }
-
-function editTripName() {
-  const name=prompt('여행 이름을 입력하세요', state.tripName);
-  if(name?.trim()) { state.tripName=name.trim(); document.getElementById('trip-name-display').textContent=state.tripName+' ✏️'; }
+function editTripName(){
+  const n=prompt('여행 이름',S.tripName);
+  if(n?.trim()){ S.tripName=n.trim(); document.getElementById('trip-name-display').textContent=S.tripName+' ✏️'; }
 }
 
-// ════════════════════════════════════════════
-//  TABS
-// ════════════════════════════════════════════
-function switchTab(tab) {
-  state.currentTab = tab;
-  document.getElementById('view-timeline').classList.toggle('hidden', tab!=='timeline');
-  document.getElementById('view-map').classList.toggle('hidden', tab!=='map');
-  document.querySelectorAll('.tab-btn').forEach(b=>{
-    const active=b.dataset.tab===tab;
-    b.style.color=active?'#0f57d0':'#9ca3af';
-    b.style.fontWeight=active?'800':'600';
-  });
-  const ind=document.getElementById('tab-indicator');
-  if(tab==='timeline'){ ind.style.left='0'; ind.style.width='50%'; }
-  else { ind.style.left='50%'; ind.style.width='50%'; }
-  if(tab==='map') { setTimeout(()=>{if(map)map.resize();},100); updateMapView(); }
-}
-
-// ════════════════════════════════════════════
-//  TIMELINE CALCULATION & RENDER
-// ════════════════════════════════════════════
-function calcTimeline() {
-  const speed = TRANSPORT_MODES[state.transportIdx].speed;
-  let cur = timeToMin(state.startTime);
-  const items = [];
-  for(let i=0;i<state.places.length;i++) {
-    const p=state.places[i];
+// ══════════════════════════════════════════════
+// TIMELINE
+// ══════════════════════════════════════════════
+function calcTimeline(){
+  const speed=TRANSPORTS[S.transportIdx].speed;
+  let cur=t2m(S.startTime);
+  return S.places.map((p,i)=>{
     let travel=0, dist=0;
-    if(i>0) {
-      const prev=state.places[i-1];
-      dist=haversine(prev.lat,prev.lng,p.lat,p.lng);
-      travel=Math.max(5,Math.round(dist/speed*60));
-      cur+=travel;
-    }
-    const arrive=cur;
-    cur+=p.duration;
-    items.push({ place:p, arrive:minToTime(arrive), leave:minToTime(cur), travelMin:travel, distKm:dist });
-  }
-  return items;
+    if(i>0){ dist=haversine(S.places[i-1].lat,S.places[i-1].lng,p.lat,p.lng); travel=Math.max(5,Math.round(dist/speed*60)); cur+=travel; }
+    const arrive=cur; cur+=p.duration;
+    return {p,arrive:m2t(arrive),leave:m2t(cur),travel,dist};
+  });
 }
 
-function renderTimeline() {
-  const places=state.places;
+function renderTimeline(){
+  const places=S.places, tl=calcTimeline(), tm=TRANSPORTS[S.transportIdx];
   const empty=document.getElementById('empty-state');
-  const content=document.getElementById('timeline-content');
-  const fab=document.getElementById('fab');
-  const summaryBar=document.getElementById('summary-bar');
+  const items=document.getElementById('timeline-items');
+  const optWrap=document.getElementById('optimize-wrap');
+  const sumBar=document.getElementById('summary-bar');
 
-  if(places.length===0) {
-    empty.classList.remove('hidden');
-    content.classList.add('hidden');
-    fab.classList.add('hidden');
-    summaryBar.classList.add('hidden');
-    return;
-  }
-  empty.classList.add('hidden');
-  content.classList.remove('hidden');
-  fab.classList.remove('hidden');
-  summaryBar.classList.remove('hidden');
+  if(!places.length){ empty.style.display=''; items.style.display='none'; optWrap.style.display='none'; sumBar.style.display='none'; return; }
+  empty.style.display='none'; items.style.display=''; optWrap.style.display=''; sumBar.style.display='';
 
-  document.getElementById('start-time-btn').textContent=state.startTime;
-  const timeline=calcTimeline();
-  const tMode=TRANSPORT_MODES[state.transportIdx];
-
-  let totalCost=0, totalMin=0, totalDist=0;
-  places.forEach(p=>{ totalCost+=p.cost; totalMin+=p.duration; });
-  timeline.forEach(t=>{ totalDist+=t.distKm; totalMin+=t.travelMin; });
-
+  let totCost=0,totMin=0,totDist=0;
+  places.forEach(p=>{totCost+=p.cost;totMin+=p.duration;});
+  tl.forEach(t=>{totMin+=t.travel;totDist+=t.dist;});
   document.getElementById('sum-places').textContent=places.length+'개';
-  document.getElementById('sum-time').textContent=fmtDur(totalMin);
-  document.getElementById('sum-cost').textContent=fmtCost(totalCost);
-  document.getElementById('sum-dist').textContent=totalDist.toFixed(1)+'km';
+  document.getElementById('sum-time').textContent=fmtDur(totMin);
+  document.getElementById('sum-cost').textContent=fmtCost(totCost);
+  document.getElementById('sum-dist').textContent=totDist.toFixed(1)+'km';
 
-  const container=document.getElementById('timeline-items');
-  container.innerHTML=timeline.map((item,i)=>{
-    const p=item.place;
-    const cat=CATS[p.category]||CATS['기타'];
-    return `
-    ${i>0?`
-    <!-- Travel connector -->
-    <div class="flex items-center gap-3 my-1 pl-3">
-      <div class="flex flex-col items-center">
-        <div class="w-0.5 bg-gradient-to-b from-outline-variant/30 to-primary/30 h-4 rounded"></div>
-        <div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center shrink-0">
-          <span class="ms text-outline" style="font-size:14px;">${tMode.icon}</span>
+  items.innerHTML=tl.map((t,i)=>{
+    const c=CATS[t.p.category]||CATS['기타'];
+    return `${i>0?`<div style="display:flex;align-items:center;gap:12px;margin:4px 0;padding-left:4px">
+      <div style="display:flex;flex-direction:column;align-items:center"><div style="width:1px;height:10px;background:#e1e2ed"></div><div style="width:28px;height:28px;border-radius:9999px;background:#ededf6;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:14px;color:#797a84">${tm.icon}</span></div><div style="width:1px;height:10px;background:#e1e2ed"></div></div>
+      <div style="font-size:12px;color:#797a84;font-weight:600">${fmtDur(t.travel)} · ${t.dist.toFixed(1)}km</div></div>`:''}
+    <div class="place-card fu">
+      <div style="display:flex;gap:12px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
+          <div style="width:42px;height:42px;border-radius:16px;background:${c.bg};display:flex;align-items:center;justify-content:center"><span class="ms" style="color:${c.color};font-size:22px">${c.icon}</span></div>
+          <span style="font-size:11px;font-weight:800;color:#b0b1bc">${i+1}</span>
         </div>
-        <div class="w-0.5 bg-gradient-to-b from-primary/30 to-outline-variant/30 h-4 rounded"></div>
-      </div>
-      <div class="text-xs text-outline font-semibold">
-        ${fmtDur(item.travelMin)} · ${item.distKm.toFixed(1)}km
-      </div>
-    </div>`:''}
-    <!-- Place card -->
-    <div class="place-card bg-white rounded-3xl p-4 shadow-[0_4px_20px_rgba(15,87,208,0.06)] border border-outline-variant/10 mb-0 fade-up relative group">
-      <div class="flex gap-3">
-        <!-- Order number + icon -->
-        <div class="shrink-0 flex flex-col items-center gap-1">
-          <div class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:${cat.bg}">
-            <span class="ms" style="color:${cat.color};font-size:20px;">${cat.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
+            <div style="min-width:0"><div style="font-size:11px;font-weight:700;color:${c.color};text-transform:uppercase;letter-spacing:.06em">${t.p.category}</div><div style="font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.p.name}</div>${t.p.address?`<div style="font-size:11px;color:#797a84;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.p.address}</div>`:''}</div>
+            <div style="text-align:right;flex-shrink:0"><div style="font-size:14px;font-weight:800;color:#0f57d0">${t.arrive}</div><div style="font-size:11px;color:#797a84">~${t.leave}</div></div>
           </div>
-          <span class="text-[10px] font-black text-outline">${i+1}</span>
-        </div>
-        <!-- Content -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0">
-              <p class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color:${cat.color}">${p.category}</p>
-              <h3 class="font-extrabold text-base leading-tight truncate">${p.name}</h3>
-              ${p.address?`<p class="text-xs text-outline mt-0.5 truncate">${p.address}</p>`:''}
-            </div>
-            <div class="text-right shrink-0">
-              <p class="text-sm font-extrabold text-primary">${item.arrive}</p>
-              <p class="text-[10px] text-outline">~ ${item.leave}</p>
-            </div>
-          </div>
-          <!-- Tags -->
-          <div class="flex gap-2 mt-2.5 flex-wrap">
-            <span class="flex items-center gap-1 bg-surface-container px-2.5 py-1 rounded-full text-xs font-bold">
-              <span class="ms text-outline" style="font-size:12px;">schedule</span>${fmtDur(p.duration)}
-            </span>
-            <span class="flex items-center gap-1 bg-surface-container px-2.5 py-1 rounded-full text-xs font-bold">
-              <span class="ms text-outline" style="font-size:12px;">payments</span>${fmtCost(p.cost)}
-            </span>
-            ${p.note?`<span class="flex items-center gap-1 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full text-xs font-bold max-w-[120px] truncate">
-              <span class="ms" style="font-size:12px;">sticky_note_2</span>${p.note}</span>`:''}
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+            <span class="tag"><span class="ms" style="font-size:12px;color:#797a84">schedule</span>${fmtDur(t.p.duration)}</span>
+            <span class="tag"><span class="ms" style="font-size:12px;color:#797a84">payments</span>${fmtCost(t.p.cost)}</span>
+            ${t.p.note?`<span class="tag" style="background:#fef9c3;color:#92400e;max-width:120px;overflow:hidden;text-overflow:ellipsis"><span class="ms" style="font-size:12px">sticky_note_2</span>${t.p.note}</span>`:''}
           </div>
         </div>
       </div>
-      <!-- Action buttons (visible on hover/long press) -->
-      <div class="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onclick="editPlace('${p.id}')" class="w-7 h-7 bg-surface-container rounded-full flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-colors">
-          <span class="ms" style="font-size:14px;">edit</span>
-        </button>
-        <button onclick="deletePlace('${p.id}')" class="w-7 h-7 bg-surface-container rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-colors">
-          <span class="ms" style="font-size:14px;">delete</span>
-        </button>
-        ${i>0?`<button onclick="movePlace('${p.id}',-1)" class="w-7 h-7 bg-surface-container rounded-full flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-colors">
-          <span class="ms" style="font-size:14px;">arrow_upward</span>
-        </button>`:''}
-        ${i<state.places.length-1?`<button onclick="movePlace('${p.id}',1)" class="w-7 h-7 bg-surface-container rounded-full flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-colors">
-          <span class="ms" style="font-size:14px;">arrow_downward</span>
-        </button>`:''}
+      <div class="actions">
+        ${i>0?`<div class="icon-btn" onclick="movePlace('${t.p.id}',-1)"><span class="ms" style="font-size:14px">arrow_upward</span></div>`:''}
+        ${i<places.length-1?`<div class="icon-btn" onclick="movePlace('${t.p.id}',1)"><span class="ms" style="font-size:14px">arrow_downward</span></div>`:''}
+        <div class="icon-btn" onclick="editPlace('${t.p.id}')"><span class="ms" style="font-size:14px">edit</span></div>
+        <div class="icon-btn" onclick="deletePlace('${t.p.id}')" style="color:#ef4444"><span class="ms" style="font-size:14px">delete</span></div>
       </div>
     </div>`;
   }).join('');
 }
 
-// ════════════════════════════════════════════
-//  PLACE ACTIONS
-// ════════════════════════════════════════════
-function deletePlace(id) {
-  state.places=state.places.filter(p=>p.id!==id);
-  renderTimeline();
-  updateMapView();
-  showToast('장소를 삭제했어요', 'delete');
+function deletePlace(id){ S.places=S.places.filter(p=>p.id!==id); renderTimeline(); updateMap(); showToast('삭제했습니다','delete'); }
+function movePlace(id,dir){ const i=S.places.findIndex(p=>p.id===id),j=i+dir; if(j<0||j>=S.places.length)return; [S.places[i],S.places[j]]=[S.places[j],S.places[i]]; renderTimeline(); updateMap(); }
+function editPlace(id){ const p=S.places.find(x=>x.id===id); if(!p)return; pendingPlace={...p,editing:true}; openDetailSheet(p); }
+function optimizeRoute(){
+  if(S.places.length<3){showToast('3개 이상 장소가 필요해요','info');return;}
+  const r=[...S.places],res=[r.shift()];
+  while(r.length){const l=res[res.length-1];let bi=0,bd=Infinity;r.forEach((p,i)=>{const d=haversine(l.lat,l.lng,p.lat,p.lng);if(d<bd){bd=d;bi=i;}});res.push(r.splice(bi,1)[0]);}
+  S.places=res; renderTimeline(); updateMap(); showToast('✨ 경로 최적화 완료!','auto_awesome');
 }
 
-function movePlace(id, dir) {
-  const idx=state.places.findIndex(p=>p.id===id);
-  const newIdx=idx+dir;
-  if(newIdx<0||newIdx>=state.places.length) return;
-  [state.places[idx],state.places[newIdx]]=[state.places[newIdx],state.places[idx]];
-  renderTimeline();
-  updateMapView();
-}
-
-function editPlace(id) {
-  const p=state.places.find(x=>x.id===id);
-  if(!p) return;
-  pendingPlace={...p, editing:true};
-  openDetailSheet(p);
-}
-
-function editStartTime() {
-  const t=prompt('출발 시간 (HH:MM)', state.startTime);
-  if(t&&/^\d{2}:\d{2}$/.test(t)) { state.startTime=t; renderTimeline(); }
-}
-
-// ════════════════════════════════════════════
-//  ROUTE OPTIMIZATION
-// ════════════════════════════════════════════
-function optimizeRoute() {
-  if(state.places.length<3) { showToast('3개 이상의 장소가 필요해요', 'info'); return; }
-  const orig=[...state.places];
-  const result=[orig.shift()];
-  while(orig.length) {
-    const last=result[result.length-1];
-    let best=0, bestD=Infinity;
-    orig.forEach((p,i)=>{
-      const d=haversine(last.lat,last.lng,p.lat,p.lng);
-      if(d<bestD){bestD=d;best=i;}
+// ══════════════════════════════════════════════
+// MAP
+// ══════════════════════════════════════════════
+function initMap(){
+  map=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[126.978,37.566],zoom:5,attributionControl:false});
+  map.on('load',()=>{
+    map.on('click',async e=>{
+      const{lng,lat}=e.lngLat;
+      showToast('장소 정보 불러오는 중...','hourglass_empty');
+      const pl=await reverseGeocode(lat,lng);
+      if(pl){pendingPlace={...pl,id:uid(),editing:false};openDetailSheet(pl);}
     });
-    result.push(orig.splice(best,1)[0]);
+  });
+}
+
+async function reverseGeocode(lat,lng){
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ko`);
+    const d=await r.json();
+    return{name:d.name||d.display_name.split(',')[0],address:d.display_name.split(',').slice(1,3).join(', ').trim(),lat,lng,category:guessCategory({type:d.type,class:d.class,display_name:d.display_name})};
+  }catch{return{name:'선택한 위치',address:'',lat,lng,category:'기타'};}
+}
+
+function updateMap(){
+  if(!map||!map.isStyleLoaded()){setTimeout(updateMap,300);return;}
+  markers.forEach(m=>m.remove()); markers=[];
+  if(map.getLayer('route'))map.removeLayer('route');
+  if(map.getSource('route'))map.removeSource('route');
+  const places=S.places;
+  if(!places.length)return;
+  places.forEach((p,i)=>{
+    const c=CATS[p.category]||CATS['기타'];
+    const el=document.createElement('div');
+    el.style.cssText=`width:32px;height:38px;cursor:pointer;display:flex;flex-direction:column;align-items:center`;
+    el.innerHTML=`<div style="width:32px;height:32px;background:${c.color};border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.25)"><span style="transform:rotate(45deg);font-size:11px;font-weight:800;color:white">${i+1}</span></div>`;
+    el.addEventListener('click',e=>{e.stopPropagation();new maplibregl.Popup({offset:20,closeButton:false}).setLngLat([p.lng,p.lat]).setHTML(`<div style="font-family:Inter"><p style="font-size:10px;color:#797a84;font-weight:700;text-transform:uppercase;margin:0 0 2px">${p.category}</p><p style="font-size:15px;font-weight:800;color:#0f57d0;margin:0 0 4px">${p.name}</p><p style="font-size:12px;margin:0">${fmtDur(p.duration)} · ${fmtCost(p.cost)}</p></div>`).addTo(map);});
+    markers.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([p.lng,p.lat]).addTo(map));
+  });
+  if(places.length>=2){
+    map.addSource('route',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:places.map(p=>[p.lng,p.lat])}}});
+    map.addLayer({id:'route',type:'line',source:'route',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#0f57d0','line-width':3,'line-dasharray':[2,3],'line-opacity':.7}});
   }
-  state.places=result;
-  renderTimeline();
-  updateMapView();
-  showToast('✨ 경로를 최적화했어요!', 'auto_awesome');
+  if(places.length===1)map.flyTo({center:[places[0].lng,places[0].lat],zoom:14,duration:800});
+  else{const b=new maplibregl.LngLatBounds();places.forEach(p=>b.extend([p.lng,p.lat]));map.fitBounds(b,{padding:60,duration:800,maxZoom:14});}
 }
 
-// ════════════════════════════════════════════
-//  ADD PLACE SHEET
-// ════════════════════════════════════════════
-function openAddSheet() {
-  document.getElementById('overlay-add').classList.remove('hidden');
-  requestAnimationFrame(()=>document.getElementById('sheet-add').classList.remove('sheet-hidden'));
-  setTimeout(()=>document.getElementById('add-search-input').focus(),400);
+// ══════════════════════════════════════════════
+// ADD SHEET
+// ══════════════════════════════════════════════
+function openAddSheet(){
+  document.getElementById('ov-add').style.display='block';
+  requestAnimationFrame(()=>document.getElementById('sh-add').classList.remove('sh'));
+  setTimeout(()=>document.getElementById('add-input').focus(),400);
 }
-
-function closeAddSheet() {
-  document.getElementById('sheet-add').classList.add('sheet-hidden');
-  setTimeout(()=>{
-    document.getElementById('overlay-add').classList.add('hidden');
-    document.getElementById('add-search-input').value='';
-    document.getElementById('add-search-clear').classList.add('hidden');
-    document.getElementById('add-list').innerHTML='';
-    document.getElementById('add-suggestions').classList.remove('hidden');
-  },350);
+function closeAddSheet(){
+  document.getElementById('sh-add').classList.add('sh');
+  setTimeout(()=>{document.getElementById('ov-add').style.display='none';document.getElementById('add-input').value='';document.getElementById('add-clear').style.display='none';document.getElementById('add-list').innerHTML='';document.getElementById('add-cats').style.display='';},350);
 }
+function clearAddSearch(){ document.getElementById('add-input').value=''; document.getElementById('add-clear').style.display='none'; document.getElementById('add-list').innerHTML=''; document.getElementById('add-cats').style.display=''; document.getElementById('add-input').focus(); }
 
-function clearAddSearch() {
-  document.getElementById('add-search-input').value='';
-  document.getElementById('add-search-clear').classList.add('hidden');
-  document.getElementById('add-list').innerHTML='';
-  document.getElementById('add-suggestions').classList.remove('hidden');
-  document.getElementById('add-search-input').focus();
-}
-
-function onAddSearch(q) {
-  clearTimeout(searchDebounce);
-  const clearBtn=document.getElementById('add-search-clear');
-  clearBtn.classList.toggle('hidden',q.length===0);
-  document.getElementById('add-suggestions').classList.toggle('hidden',q.length>0);
-  if(q.length<2) { document.getElementById('add-list').innerHTML=''; return; }
-
-  showAddLoading(true);
-  searchDebounce=setTimeout(async()=>{
-    const results=await nominatimSearch(q);
-    showAddLoading(false);
-    renderAddResults(results);
+function onAddSearch(q){
+  clearTimeout(searchTimer);
+  document.getElementById('add-clear').style.display=q?'block':'none';
+  document.getElementById('add-cats').style.display=q?'none':'';
+  if(q.length<2){document.getElementById('add-list').innerHTML='';return;}
+  document.getElementById('add-loading').style.display='flex';
+  searchTimer=setTimeout(async()=>{
+    const res=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=8&accept-language=ko&addressdetails=1`,{headers:{'Accept-Language':'ko'}}).then(r=>r.json()).catch(()=>[]);
+    document.getElementById('add-loading').style.display='none';
+    if(!res.length){document.getElementById('add-list').innerHTML=`<div style="text-align:center;padding:32px;color:#797a84;font-size:13px">검색 결과가 없어요</div>`;return;}
+    document.getElementById('add-list').innerHTML=res.map((r,i)=>{
+      const cat=guessCategory(r), c=CATS[cat], nm=r.display_name.split(',')[0], sub=r.display_name.split(',').slice(1,3).join(', ').trim();
+      return `<div onclick='sel(${JSON.stringify({name:nm,address:sub,lat:+r.lat,lng:+r.lon,category:cat})})' class="fu" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;cursor:pointer;transition:background .15s;animation-delay:${i*25}ms" onmouseover="this.style.background='#f4f3fa'" onmouseout="this.style.background=''">`+
+      `<div style="width:40px;height:40px;border-radius:14px;background:${c.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="ms" style="color:${c.color};font-size:20px">${c.icon}</span></div>`+
+      `<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nm}</div><div style="font-size:12px;color:#797a84;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sub}</div></div>`+
+      `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:9999px;background:${c.bg};color:${c.color};flex-shrink:0">${cat}</span></div>`;
+    }).join('');
   },400);
 }
 
-async function nominatimSearch(q) {
-  try {
-    const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=8&accept-language=ko&addressdetails=1`;
-    const r=await fetch(url,{headers:{'Accept-Language':'ko'}});
-    return await r.json();
-  } catch { return []; }
-}
-
-function showAddLoading(show) {
-  document.getElementById('add-loading').classList.toggle('hidden',!show);
-  document.getElementById('add-loading').style.display=show?'flex':'none';
-}
-
-function guessCategory(result) {
-  const t=(result.type||'').toLowerCase();
-  const cls=(result.class||'').toLowerCase();
-  const name=(result.display_name||'').toLowerCase();
-  if(['restaurant','food','cafe','bar','fast_food','bakery'].some(x=>t.includes(x)||name.includes(x))) return name.includes('카페')||name.includes('coffee')?'카페':'식당';
-  if(['museum','gallery','art'].some(x=>t.includes(x)||name.includes(x))) return '박물관';
-  if(['hotel','hostel','motel','guesthouse'].some(x=>t.includes(x)||name.includes(x))) return '숙소';
-  if(['park','garden','forest','recreation'].some(x=>t.includes(x)||name.includes(x))) return '공원';
-  if(['shop','mall','market','store','supermarket'].some(x=>t.includes(x)||name.includes(x))) return '쇼핑';
-  if(cls==='tourism'||cls==='leisure') return '관광지';
-  return '기타';
-}
-
-function renderAddResults(results) {
-  const list=document.getElementById('add-list');
-  if(!results.length) {
-    list.innerHTML=`<div class="text-center py-8 text-outline text-sm">검색 결과가 없어요.<br/>다른 키워드로 검색해 보세요.</div>`;
-    return;
-  }
-  list.innerHTML=results.map((r,i)=>{
-    const cat=guessCategory(r);
-    const c=CATS[cat];
-    const mainName=r.display_name.split(',')[0];
-    const subAddr=r.display_name.split(',').slice(1,3).join(', ').trim();
-    return `<div class="add-result-item flex items-center gap-3 p-3 rounded-2xl hover:bg-surface-container-low active:bg-surface-container transition-colors cursor-pointer fade-up" style="animation-delay:${i*30}ms"
-      onclick='selectAddResult(${JSON.stringify({name:mainName,address:subAddr,lat:parseFloat(r.lat),lng:parseFloat(r.lon),category:cat}).replace(/'/g,"&#39;")})'>
-      <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:${c.bg}">
-        <span class="ms" style="color:${c.color};font-size:20px;">${c.icon}</span>
-      </div>
-      <div class="flex-1 min-w-0">
-        <p class="font-bold text-sm truncate">${mainName}</p>
-        <p class="text-xs text-outline truncate">${subAddr}</p>
-      </div>
-      <span class="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style="background:${c.bg};color:${c.color}">${cat}</span>
-    </div>`;
-  }).join('');
-}
-
-function selectAddResult(place) {
-  pendingPlace={...place, id:uid(), editing:false};
+function sel(place){
+  pendingPlace={...place,id:uid(),editing:false};
   closeAddSheet();
   setTimeout(()=>openDetailSheet(place),380);
 }
 
-// ════════════════════════════════════════════
-//  DETAIL SHEET
-// ════════════════════════════════════════════
-function openDetailSheet(place) {
-  const cat=place.category||'기타';
-  const c=CATS[cat];
-  document.getElementById('detail-name').textContent=place.name;
-  document.getElementById('detail-address').textContent=place.address||'';
-  // Duration
-  const dur=place.duration||c.defaultDur;
-  document.getElementById('detail-duration').value=dur;
-  document.getElementById('detail-duration-label').textContent=fmtDur(dur);
-  // Cost
-  document.getElementById('detail-cost').value=place.cost!=null?place.cost:c.defaultCost;
-  // Note
-  document.getElementById('detail-note').value=place.note||'';
-  // Category buttons
-  const catEl=document.getElementById('detail-categories');
-  catEl.innerHTML=Object.keys(CATS).map(k=>`
-    <button onclick="selectCategory('${k}')" data-cat="${k}"
-      class="cat-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${k===cat?'border-primary text-primary bg-primary/5':'border-transparent bg-surface-container text-on-surface-variant'}">
+function guessCategory(r){
+  const t=(r.type||'').toLowerCase(), cl=(r.class||'').toLowerCase(), dn=(r.display_name||'').toLowerCase();
+  if(['restaurant','food','fast_food','bakery','bar'].some(x=>t.includes(x)||dn.includes(x))) return dn.includes('카페')||dn.includes('coffee')?'카페':'식당';
+  if(['museum','gallery','art'].some(x=>t.includes(x)||dn.includes(x))) return '박물관';
+  if(['hotel','hostel','motel','guesthouse'].some(x=>t.includes(x)||dn.includes(x))) return '숙소';
+  if(['park','garden','forest'].some(x=>t.includes(x)||dn.includes(x))) return '공원';
+  if(['shop','mall','market','store'].some(x=>t.includes(x)||dn.includes(x))) return '쇼핑';
+  if(cl==='tourism'||cl==='leisure') return '관광지';
+  return '기타';
+}
+
+// Build category quick buttons
+function buildCatBtns(){
+  document.getElementById('cat-btns').innerHTML=Object.entries(CATS).map(([k,v])=>`
+    <button onclick="document.getElementById('add-input').value='${k}';onAddSearch('${k}')" style="background:#ededf6;border:none;border-radius:16px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#e8f0fe'" onmouseout="this.style.background='#ededf6'">
+      <span class="ms" style="color:${v.color};font-size:22px">${v.icon}</span>
+      <span style="font-size:12px;font-weight:700">${k}</span>
+    </button>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// DETAIL SHEET
+// ══════════════════════════════════════════════
+function openDetailSheet(p){
+  const cat=p.category||'기타', c=CATS[cat];
+  document.getElementById('d-name').textContent=p.name;
+  document.getElementById('d-addr').textContent=p.address||'';
+  document.getElementById('d-dur').value=p.duration||c.dd;
+  document.getElementById('d-dur-label').textContent=fmtDur(p.duration||c.dd);
+  document.getElementById('d-cost').value=p.cost!=null?p.cost:c.dc;
+  document.getElementById('d-note').value=p.note||'';
+  document.getElementById('d-cats').innerHTML=Object.keys(CATS).map(k=>`
+    <button onclick="selectCat('${k}')" data-cat="${k}" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:9999px;border:2px solid ${k===cat?'#0f57d0':'transparent'};background:${k===cat?'#e8f0fe':'#ededf6'};color:${k===cat?'#0f57d0':'#5d5f68'};font-size:12px;font-weight:700;cursor:pointer;transition:all .15s">
       <span class="ms" style="font-size:14px;color:${CATS[k].color}">${CATS[k].icon}</span>${k}
     </button>`).join('');
-
-  document.getElementById('overlay-detail').classList.remove('hidden');
-  requestAnimationFrame(()=>document.getElementById('sheet-detail').classList.remove('sheet-hidden'));
+  document.getElementById('ov-detail').style.display='block';
+  requestAnimationFrame(()=>document.getElementById('sh-detail').classList.remove('sh'));
 }
-
-function closeDetailSheet() {
-  document.getElementById('sheet-detail').classList.add('sheet-hidden');
-  setTimeout(()=>document.getElementById('overlay-detail').classList.add('hidden'),350);
-  pendingPlace=null;
-}
-
-function selectCategory(cat) {
-  if(!pendingPlace) return;
+function closeDetailSheet(){ document.getElementById('sh-detail').classList.add('sh'); setTimeout(()=>{document.getElementById('ov-detail').style.display='none';pendingPlace=null;},350); }
+function selectCat(cat){
+  if(!pendingPlace)return;
   pendingPlace.category=cat;
   const c=CATS[cat];
-  // Update cost/duration to category defaults if user hasn't changed
-  document.getElementById('detail-duration').value=c.defaultDur;
-  document.getElementById('detail-duration-label').textContent=fmtDur(c.defaultDur);
-  document.getElementById('detail-cost').value=c.defaultCost;
-  document.querySelectorAll('.cat-btn').forEach(b=>{
-    const active=b.dataset.cat===cat;
-    b.className=b.className.replace(/border-\S+|text-\S+|bg-\S+/g,'').trim();
-    b.classList.add(active?'border-primary':'border-transparent',
-      active?'text-primary':'text-on-surface-variant',
-      active?'bg-primary/5':'bg-surface-container','border-2','transition-all');
+  document.getElementById('d-dur').value=c.dd;
+  document.getElementById('d-dur-label').textContent=fmtDur(c.dd);
+  document.getElementById('d-cost').value=c.dc;
+  document.querySelectorAll('#d-cats button').forEach(b=>{
+    const a=b.dataset.cat===cat;
+    b.style.borderColor=a?'#0f57d0':'transparent';
+    b.style.background=a?'#e8f0fe':'#ededf6';
+    b.style.color=a?'#0f57d0':'#5d5f68';
   });
 }
-
-function updateDurationLabel(val) {
-  document.getElementById('detail-duration-label').textContent=fmtDur(parseInt(val));
-}
-function setCost(val) { document.getElementById('detail-cost').value=val; }
-
-function confirmPlace() {
-  if(!pendingPlace) return;
-  pendingPlace.category=document.querySelector('.cat-btn.border-primary')?.dataset.cat||pendingPlace.category||'기타';
-  pendingPlace.duration=parseInt(document.getElementById('detail-duration').value)||60;
-  pendingPlace.cost=parseInt(document.getElementById('detail-cost').value)||0;
-  pendingPlace.note=document.getElementById('detail-note').value.trim();
-
-  if(pendingPlace.editing) {
-    const idx=state.places.findIndex(p=>p.id===pendingPlace.id);
-    if(idx>=0) state.places[idx]={...pendingPlace};
-  } else {
-    state.places.push({...pendingPlace});
-  }
-
-  closeDetailSheet();
-  renderTimeline();
-  updateMapView();
-  if(state.currentTab==='map') switchTab('map');
-  showToast(`📍 ${pendingPlace.name} 추가됨`, 'check_circle');
+function confirmPlace(){
+  if(!pendingPlace)return;
+  pendingPlace.category=document.querySelector('#d-cats button[style*="#0f57d0"]')?.dataset.cat||pendingPlace.category||'기타';
+  pendingPlace.duration=+document.getElementById('d-dur').value||60;
+  pendingPlace.cost=+document.getElementById('d-cost').value||0;
+  pendingPlace.note=document.getElementById('d-note').value.trim();
+  if(pendingPlace.editing){const i=S.places.findIndex(p=>p.id===pendingPlace.id);if(i>=0)S.places[i]={...pendingPlace};}
+  else S.places.push({...pendingPlace});
+  closeDetailSheet(); renderTimeline(); updateMap();
+  showToast(`📍 ${pendingPlace.name} 추가됨`,'check_circle');
 }
 
-// ════════════════════════════════════════════
-//  MAP
-// ════════════════════════════════════════════
-function initMap() {
-  map=new maplibregl.Map({
-    container:'map',
-    style:'https://tiles.openfreemap.org/styles/liberty',
-    center:[126.978,37.566],
-    zoom:5,
-    attributionControl:false,
-  });
-  map.on('load',()=>{
-    // Tap on map to add place
-    map.on('click',async(e)=>{
-      const {lng,lat}=e.lngLat;
-      showToast('장소 정보 불러오는 중...','hourglass_empty');
-      const place=await reverseGeocode(lat,lng);
-      if(place) { pendingPlace={...place,id:uid(),editing:false}; openDetailSheet(place); }
-    });
-  });
+// ══════════════════════════════════════════════
+// 여행정보 PAGE
+// ══════════════════════════════════════════════
+function renderSharedList(){
+  document.getElementById('shared-list').innerHTML=SHARED_ITINERARIES.map(it=>`
+    <div style="display:flex;gap:12px;background:white;border-radius:20px;overflow:hidden;box-shadow:0 2px 12px rgba(15,87,208,.06);cursor:pointer">
+      <img src="${it.img}" style="width:88px;height:88px;object-fit:cover;flex-shrink:0"/>
+      <div style="padding:12px 12px 12px 0;flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <div style="width:24px;height:24px;border-radius:9999px;background:#0f57d0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:white">${it.avatar}</div>
+          <span style="font-size:12px;font-weight:600;color:#797a84">${it.user}</span>
+        </div>
+        <div style="font-size:15px;font-weight:800;margin-bottom:4px">${it.city} · ${it.days}일</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${it.tags.map(t=>`<span class="badge" style="background:#e8f0fe;color:#0f57d0">${t}</span>`).join('')}
+          <span class="badge" style="background:#fef3e2;color:#e67e22">❤️ ${it.likes}</span>
+        </div>
+      </div>
+    </div>`).join('');
 }
 
-async function reverseGeocode(lat,lng) {
-  try {
-    const url=`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ko`;
-    const r=await fetch(url);
-    const d=await r.json();
-    const name=d.name||d.display_name.split(',')[0];
-    const address=d.display_name.split(',').slice(1,3).join(', ').trim();
-    return {name,address,lat,lng,category:guessCategory({type:d.type,class:d.class,display_name:d.display_name})};
-  } catch { return {name:'선택한 위치',address:'',lat,lng,category:'기타'}; }
+const ROOM_REGIONS=['전체','일본','동남아','유럽','미주'];
+let currentRegion='전체';
+function renderRooms(region){
+  currentRegion=region;
+  document.getElementById('room-filter').innerHTML=ROOM_REGIONS.map(r=>`
+    <button onclick="renderRooms('${r}')" style="padding:6px 14px;border-radius:9999px;border:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;background:${r===region?'#0f57d0':'#ededf6'};color:${r===region?'white':'#5d5f68'}">${r}</button>`).join('');
+  const filtered=region==='전체'?CHAT_ROOMS:CHAT_ROOMS.filter(r=>r.region===region);
+  document.getElementById('room-list').innerHTML=filtered.map(r=>`
+    <div class="chat-room" onclick="showToast('${r.name} 입장!','chat')">
+      <div style="width:44px;height:44px;border-radius:16px;background:#ededf6;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${r.name.split(' ')[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name.split(' ').slice(1).join(' ')}</div>
+          <div style="font-size:11px;color:#797a84;flex-shrink:0;margin-left:8px">${r.time}</div>
+        </div>
+        <div style="font-size:12px;color:#797a84;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">${r.last}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <span style="font-size:11px;color:#797a84">👥 ${r.members}명</span>
+          ${r.active?`<span style="width:6px;height:6px;border-radius:9999px;background:#22c55e;display:inline-block"></span><span style="font-size:11px;color:#22c55e;font-weight:600">활성</span>`:''}
+        </div>
+      </div>
+      <span class="ms" style="color:#b0b1bc;flex-shrink:0">chevron_right</span>
+    </div>`).join('');
+}
+function createRoom(){ showToast('채팅방 생성 기능 준비중 🔧','construction'); }
+
+// ══════════════════════════════════════════════
+// 여행도구 PAGE
+// ══════════════════════════════════════════════
+
+// — Weather —
+async function fetchWeather(city){
+  if(!city.trim())return;
+  const el=document.getElementById('weather-result');
+  el.innerHTML=`<div style="color:#797a84;font-size:13px">불러오는 중...</div>`;
+  try{
+    const r=await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`).then(r=>r.json());
+    const c=r.current_condition[0], desc=c.lang_ko?.[0]?.value||c.weatherDesc[0].value;
+    const temp=c.temp_C, feels=c.FeelsLikeC, hum=c.humidity, wind=c.windspeedKmph;
+    el.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px">
+      <div style="font-size:48px;font-weight:800;color:#0f57d0">${temp}°</div>
+      <div style="text-align:left"><div style="font-size:14px;font-weight:700">${city}</div><div style="font-size:13px;color:#797a84">${desc}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <div style="background:#ededf6;border-radius:12px;padding:10px;text-align:center"><div style="font-size:11px;color:#797a84">체감</div><div style="font-size:15px;font-weight:700">${feels}°</div></div>
+      <div style="background:#ededf6;border-radius:12px;padding:10px;text-align:center"><div style="font-size:11px;color:#797a84">습도</div><div style="font-size:15px;font-weight:700">${hum}%</div></div>
+      <div style="background:#ededf6;border-radius:12px;padding:10px;text-align:center"><div style="font-size:11px;color:#797a84">풍속</div><div style="font-size:15px;font-weight:700">${wind}km</div></div>
+    </div>`;
+  }catch{el.innerHTML=`<div style="color:#ef4444;font-size:13px">날씨 정보를 불러올 수 없습니다</div>`;}
 }
 
-function updateMapView() {
-  if(!map||!map.isStyleLoaded()) { setTimeout(updateMapView,300); return; }
+// — Timezone —
+function renderTimezones(){
+  const now=new Date();
+  document.getElementById('timezone-grid').innerHTML=TIMEZONES.map(tz=>{
+    const time=new Intl.DateTimeFormat('ko-KR',{timeZone:tz.tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(now);
+    const date=new Intl.DateTimeFormat('ko-KR',{timeZone:tz.tz,month:'short',day:'numeric',weekday:'short'}).format(now);
+    const seoulOff=getOffset('Asia/Seoul'), tzOff=getOffset(tz.tz), diff=(tzOff-seoulOff)/60;
+    const diffStr=diff===0?'±0':(diff>0?'+':'')+diff+'h';
+    return `<div style="background:#ededf6;border-radius:16px;padding:12px;text-align:center">
+      <div style="font-size:20px;margin-bottom:2px">${tz.flag}</div>
+      <div style="font-size:12px;font-weight:700;color:#5d5f68">${tz.city}</div>
+      <div style="font-size:20px;font-weight:800;color:#0f57d0;margin:2px 0">${time}</div>
+      <div style="font-size:10px;color:#797a84">${date}</div>
+      <div style="font-size:11px;font-weight:700;color:${diff===0?'#797a84':diff>0?'#16a085':'#e67e22'};margin-top:2px">${diffStr}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('tz-update').textContent='기준: 서울 시간 · '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+}
+function getOffset(tz){ return new Date(new Date().toLocaleString('en-US',{timeZone:tz})) - new Date(new Date().toLocaleString('en-US',{timeZone:'UTC'})); }
 
-  // Clear old markers
-  markers.forEach(m=>m.remove());
-  markers=[];
-
-  // Clear route
-  if(map.getLayer('route')) map.removeLayer('route');
-  if(map.getSource('route')) map.removeSource('route');
-
-  const places=state.places;
-  if(!places.length) return;
-
-  // Add markers
-  places.forEach((p,i)=>{
-    const cat=CATS[p.category]||CATS['기타'];
-    const el=document.createElement('div');
-    el.className='marker-pin cursor-pointer';
-    el.style.cssText=`background:${cat.color};width:34px;height:34px`;
-    el.innerHTML=`<span class="marker-num">${i+1}</span>`;
-    el.addEventListener('click',(e)=>{
-      e.stopPropagation();
-      new maplibregl.Popup({offset:20,closeButton:false})
-        .setLngLat([p.lng,p.lat])
-        .setHTML(`<div style="font-family:Inter,sans-serif"><p style="font-size:10px;color:#797a84;font-weight:700;text-transform:uppercase;margin:0 0 2px">${p.category}</p><p style="font-size:15px;font-weight:800;color:#0f57d0;margin:0 0 4px">${p.name}</p><p style="font-size:12px;color:#30323b;margin:0">${fmtDur(p.duration)} · ${fmtCost(p.cost)}</p></div>`)
-        .addTo(map);
-    });
-    const marker=new maplibregl.Marker({element:el,anchor:'bottom'})
-      .setLngLat([p.lng,p.lat]).addTo(map);
-    markers.push(marker);
-  });
-
-  // Draw route line
-  if(places.length>=2) {
-    const coords=places.map(p=>[p.lng,p.lat]);
-    map.addSource('route',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:coords}}});
-    map.addLayer({id:'route',type:'line',source:'route',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#0f57d0','line-width':3,'line-dasharray':[2,3],'line-opacity':0.7}});
-  }
-
-  // Fit bounds
-  if(places.length===1) { map.flyTo({center:[places[0].lng,places[0].lat],zoom:14,duration:1000}); }
-  else {
-    const bounds=new maplibregl.LngLatBounds();
-    places.forEach(p=>bounds.extend([p.lng,p.lat]));
-    map.fitBounds(bounds,{padding:60,duration:1000,maxZoom:14});
-  }
-
-  // Update mini list in map view
-  const mapPlaces=document.getElementById('map-places');
-  mapPlaces.innerHTML=places.map((p,i)=>{
-    const cat=CATS[p.category]||CATS['기타'];
-    return `<div class="flex items-center gap-3 py-2 border-b border-outline-variant/10 last:border-0 cursor-pointer" onclick="map.flyTo({center:[${p.lng},${p.lat}],zoom:15,duration:800})">
-      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black shrink-0" style="background:${cat.color}">${i+1}</div>
-      <div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${p.name}</p><p class="text-xs text-outline">${fmtDur(p.duration)} · ${fmtCost(p.cost)}</p></div>
+// — Currency —
+let ratesCache={};
+async function fetchRates(){
+  const base=document.getElementById('base-currency').value;
+  S.ratesBase=base;
+  const syms={KRW:'₩',USD:'$',EUR:'€',JPY:'¥',CNY:'¥',GBP:'£',THB:'฿',AED:'د.إ'};
+  document.getElementById('base-symbol').textContent=syms[base]||base;
+  try{
+    const targets=Object.keys(CURRENCY_META).filter(k=>k!==base).join(',');
+    const r=await fetch(`https://api.frankfurter.app/latest?from=${base}&to=${targets}`).then(r=>r.json());
+    ratesCache={...r.rates}; convertCurrency();
+  }catch{document.getElementById('currency-result').innerHTML=`<div style="color:#ef4444;font-size:13px">환율 정보를 불러올 수 없습니다</div>`;}
+}
+function convertCurrency(){
+  const amt=+document.getElementById('currency-amount').value||0;
+  const base=S.ratesBase;
+  document.getElementById('currency-result').innerHTML=Object.entries(ratesCache).map(([code,rate])=>{
+    const m=CURRENCY_META[code]; if(!m)return '';
+    const val=(amt*rate).toLocaleString('ko-KR',{maximumFractionDigits:2});
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#ededf6;border-radius:14px">
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;font-weight:700">${m.sym}</span><span style="font-size:13px;color:#5d5f68">${m.name} (${code})</span></div>
+      <span style="font-size:15px;font-weight:800">${m.sym}${val}</span>
     </div>`;
   }).join('');
 }
 
-// ════════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════════
-(function init() {
-  switchTab('timeline');
-  onDateChange(state.date);
-  initMap();
+// — Checklist —
+function renderChecklist(){
+  document.getElementById('checklist-container').innerHTML=S.checklist.map((cat,ci)=>`
+    <div style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;color:#5d5f68;margin-bottom:8px">${cat.cat}</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${cat.items.map((item,ii)=>`
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 12px;border-radius:12px;background:${item.c?'#e8f0fe':'#ededf6'};transition:background .15s">
+            <input type="checkbox" ${item.c?'checked':''} onchange="toggleCheck(${ci},${ii},this.checked)" style="width:18px;height:18px;accent-color:#0f57d0"/>
+            <span style="font-size:13px;font-weight:600;color:${item.c?'#0f57d0':'#30323b'};${item.c?'text-decoration:line-through':''}">${item.t}</span>
+          </label>`).join('')}
+      </div>
+    </div>`).join('');
+}
+function toggleCheck(ci,ii,val){ S.checklist[ci].items[ii].c=val; renderChecklist(); }
+function addCheckItem(){
+  const name=prompt('추가할 항목을 입력하세요');
+  if(name?.trim()){ S.checklist[0].items.push({t:name.trim(),c:false}); renderChecklist(); }
+}
 
-  // Init transport UI
-  const t=TRANSPORT_MODES[0];
-  document.getElementById('transport-icon').textContent=t.icon;
-  document.getElementById('transport-label').textContent=t.label;
+// — Tips —
+const TIP_REGIONS=['전체','일본','동남아','유럽','미주'];
+function renderTips(region){
+  document.getElementById('tips-filter').innerHTML=TIP_REGIONS.map(r=>`
+    <button onclick="renderTips('${r}')" style="padding:6px 14px;border-radius:9999px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:${r===region?'#0f57d0':'#ededf6'};color:${r===region?'white':'#5d5f68'}">${r}</button>`).join('');
+  const tips=TIPS_DATA[region]||[];
+  document.getElementById('tips-content').innerHTML=tips.map(t=>`
+    <div style="display:flex;gap:12px;padding:14px;background:#ededf6;border-radius:16px">
+      <span style="font-size:22px;flex-shrink:0">${t.icon}</span>
+      <div><div style="font-size:14px;font-weight:700;margin-bottom:4px">${t.title}</div><div style="font-size:13px;color:#5d5f68;line-height:1.5">${t.desc}</div></div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+(function init(){
+  onDateChange(S.date);
+  initMap();
+  buildCatBtns();
+  renderTimeline();
+  showPage('home');
+  // Timezone auto-refresh
+  setInterval(()=>{ if(S.currentPage==='tools')renderTimezones(); },30000);
 })();
 </script>
 </body>
