@@ -8,6 +8,8 @@
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet"/>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script>
     tailwind.config = {
@@ -16,41 +18,28 @@
         extend: {
           colors: {
             "outline": "#797a84",
-            "surface-dim": "#d9d9e4",
             "surface-container-lowest": "#ffffff",
-            "on-tertiary": "#fff6ff",
-            "secondary-dim": "#4d5366",
-            "surface-variant": "#e1e2ed",
-            "tertiary-dim": "#5f4b73",
-            "surface-container-highest": "#e1e2ed",
             "surface": "#faf8fe",
             "surface-container": "#ededf6",
             "on-primary": "#f9f8ff",
             "surface-container-low": "#f4f3fa",
             "primary-container": "#4e83fe",
             "surface-container-high": "#e7e7f1",
-            "on-secondary": "#f9f8ff",
+            "surface-container-highest": "#e1e2ed",
             "on-background": "#30323b",
             "tertiary": "#6c567f",
             "on-surface-variant": "#5d5f68",
-            "secondary": "#595e72",
             "primary-dim": "#004bbc",
-            "error": "#a83836",
             "primary": "#0f57d0",
             "on-surface": "#30323b",
             "secondary-container": "#dce2f9",
             "outline-variant": "#b0b1bc",
             "tertiary-container": "#e8cdfd",
             "primary-fixed": "#4e83fe",
-            "error-container": "#fa746f",
             "background": "#faf8fe"
           },
-          fontFamily: {
-            "headline": ["Inter"],
-            "body": ["Inter"],
-            "label": ["Inter"]
-          },
-          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
+          borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
         },
       },
     }
@@ -58,511 +47,539 @@
   <style>
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      display: inline-block;
-      line-height: 1;
-      text-transform: none;
-      letter-spacing: normal;
-      word-wrap: normal;
-      white-space: nowrap;
-      direction: ltr;
+      display: inline-block; line-height: 1; text-transform: none;
+      letter-spacing: normal; word-wrap: normal; white-space: nowrap; direction: ltr;
     }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    body {
-      min-height: 100dvh;
-      font-family: 'Inter', sans-serif;
-      background-color: #faf8fe;
+    body { min-height: 100dvh; font-family: 'Inter', sans-serif; background: #faf8fe; }
+    #map { width: 100%; height: 100%; }
+    .maplibregl-ctrl-bottom-left, .maplibregl-ctrl-bottom-right { display: none; }
+    .maplibregl-ctrl-top-right { display: none; }
+    .lang-btn.active { background: #0f57d0 !important; color: white !important; }
+    .search-result-item:hover { background: #f4f3fa; }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-    .search-highlight {
-      animation: fadeIn 0.3s ease-out;
+    .anim-in { animation: fadeSlideUp 0.25s ease-out both; }
+    .maplibregl-popup-content {
+      border-radius: 1rem !important;
+      padding: 12px 16px !important;
+      box-shadow: 0 8px 24px rgba(15,87,208,0.15) !important;
+      font-family: 'Inter', sans-serif !important;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-    .skeleton {
-      background: linear-gradient(90deg, #e7e7f1 25%, #f4f3fa 50%, #e7e7f1 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-    }
+    .maplibregl-popup-tip { display: none !important; }
   </style>
 </head>
 <body class="bg-surface font-body text-on-surface antialiased pb-24">
 
-  <!-- TopAppBar -->
+  <!-- ── Top App Bar ─────────────────────────────── -->
   <nav class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-[0px_12px_32px_rgba(15,87,208,0.06)] flex items-center justify-between px-6 h-16">
     <div class="flex items-center gap-3">
-      <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">flight_takeoff</span>
+      <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1;">flight_takeoff</span>
       <h1 class="font-headline text-xl font-bold tracking-tight text-slate-900">TravelApp</h1>
     </div>
     <div class="flex items-center gap-2">
+      <!-- Language Selector Button -->
+      <button id="lang-toggle-btn"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface text-sm font-semibold hover:bg-primary/10 transition-colors active:scale-95 duration-150">
+        <span class="material-symbols-outlined text-primary" style="font-size:18px;">translate</span>
+        <span id="lang-label">한국어</span>
+      </button>
       <button class="p-2 rounded-full hover:bg-slate-100/50 active:scale-95 duration-200 transition-colors">
         <span class="material-symbols-outlined text-slate-500">notifications</span>
       </button>
     </div>
   </nav>
 
-  <main class="pt-20 px-6 space-y-10 max-w-2xl mx-auto">
-
-    <!-- Hero Section -->
-    <section class="space-y-4">
-      <div class="flex justify-between items-end">
-        <div>
-          <span class="text-outline text-[11px] font-semibold uppercase tracking-widest">EXPLORE THE WORLD</span>
-          <h2 class="text-2xl font-extrabold tracking-tight mt-1">당신의 다음 여행</h2>
-        </div>
-      </div>
-      <div class="relative w-full aspect-[16/10] rounded-[2rem] overflow-hidden group shadow-[0px_12px_32px_rgba(15,87,208,0.1)]">
-        <img alt="여행 히어로 이미지" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-             src="https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=1400"/>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-        <div class="absolute bottom-0 left-0 p-8 w-full">
-          <div class="space-y-1">
-            <h3 class="text-white text-3xl font-bold tracking-tight">완벽한 여행을 계획하세요</h3>
-            <p class="text-white/70 text-sm">전 세계 수천 개의 여행지가 당신을 기다립니다</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Search Bar -->
-    <div class="relative" id="search-container">
-      <div class="flex items-center gap-4 bg-surface-container p-4 rounded-3xl shadow-[0px_8px_24px_rgba(15,87,208,0.04)] transition-all focus-within:bg-surface-container-lowest focus-within:shadow-xl group">
-        <span class="material-symbols-outlined text-outline group-focus-within:text-primary">search</span>
-        <input id="search-input" class="bg-transparent border-none focus:ring-0 p-0 text-on-surface w-full placeholder:text-outline/60 font-medium text-base"
-               placeholder="여행지, 도시, 국가 검색..." type="text" autocomplete="off"/>
-        <button id="search-btn" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary shadow-sm active:scale-90 transition-transform shrink-0">
-          <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
-        </button>
-      </div>
-      <!-- Search Suggestions Dropdown -->
-      <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-outline-variant/10 overflow-hidden z-50 max-h-64 overflow-y-auto"></div>
+  <!-- ── Language Picker Panel (slide-down) ────── -->
+  <div id="lang-panel" class="hidden fixed top-16 right-4 z-50 bg-white rounded-2xl shadow-xl border border-outline-variant/20 overflow-hidden w-52 anim-in">
+    <div class="px-4 py-3 border-b border-outline-variant/10">
+      <p class="text-xs font-bold uppercase tracking-widest text-outline">지도 언어 선택</p>
     </div>
+    <div id="lang-list" class="py-2"></div>
+  </div>
 
-    <!-- Popular Destinations -->
-    <section class="space-y-6" id="destinations-section">
-      <div class="flex justify-between items-center">
-        <h2 class="font-headline text-xl font-extrabold tracking-tight">인기 여행지</h2>
-        <div class="flex gap-2">
-          <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-          <span class="w-1.5 h-1.5 rounded-full bg-surface-container-highest"></span>
-          <span class="w-1.5 h-1.5 rounded-full bg-surface-container-highest"></span>
+  <main class="pt-16">
+
+    <!-- ── Map Section ─────────────────────────── -->
+    <section class="relative" style="height: calc(100dvh - 4rem - 5rem);">
+      <div id="map" class="absolute inset-0"></div>
+
+      <!-- Search overlay -->
+      <div class="absolute top-4 left-4 right-4 z-40" id="search-container">
+        <div class="flex items-center gap-3 bg-white/90 backdrop-blur-xl px-4 py-3.5 rounded-2xl shadow-[0px_8px_24px_rgba(15,87,208,0.12)] focus-within:shadow-xl transition-all group">
+          <span class="material-symbols-outlined text-outline group-focus-within:text-primary shrink-0">search</span>
+          <input id="search-input"
+            class="bg-transparent border-none focus:ring-0 p-0 text-on-surface w-full placeholder:text-outline/60 font-medium text-[15px]"
+            placeholder="도시나 장소를 검색하세요..." type="text" autocomplete="off"/>
+          <button id="clear-btn" class="hidden shrink-0 p-1 rounded-full hover:bg-surface-container active:scale-90 transition-all">
+            <span class="material-symbols-outlined text-outline" style="font-size:18px;">close</span>
+          </button>
+        </div>
+        <!-- Suggestions -->
+        <div id="suggestions" class="hidden mt-2 bg-white rounded-2xl shadow-xl border border-outline-variant/10 overflow-hidden max-h-72 overflow-y-auto anim-in"></div>
+      </div>
+
+      <!-- Current language badge on map -->
+      <div class="absolute bottom-4 left-4 z-40">
+        <div class="flex items-center gap-1.5 bg-white/85 backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm text-xs font-bold text-on-surface">
+          <span class="material-symbols-outlined text-primary" style="font-size:14px;">language</span>
+          <span id="map-lang-badge">한국어</span>
         </div>
       </div>
-      <div id="cards-container" class="flex gap-6 overflow-x-auto hide-scrollbar -mx-6 px-6 pb-4">
-        <!-- Cards rendered by JS -->
-      </div>
-    </section>
 
-    <!-- Search Results (hidden initially) -->
-    <section id="search-results" class="hidden space-y-6">
-      <div class="flex justify-between items-center">
-        <h2 class="font-headline text-xl font-extrabold tracking-tight" id="results-title">검색 결과</h2>
-        <button id="back-to-all" class="text-primary text-sm font-semibold hover:underline flex items-center gap-1">
-          <span class="material-symbols-outlined text-sm">arrow_back</span>
-          전체 보기
+      <!-- Zoom controls -->
+      <div class="absolute bottom-4 right-4 z-40 flex flex-col gap-2">
+        <button id="zoom-in" class="w-10 h-10 bg-white/90 backdrop-blur-md rounded-xl shadow-md flex items-center justify-center hover:bg-white active:scale-90 transition-all">
+          <span class="material-symbols-outlined text-on-surface" style="font-size:20px;">add</span>
+        </button>
+        <button id="zoom-out" class="w-10 h-10 bg-white/90 backdrop-blur-md rounded-xl shadow-md flex items-center justify-center hover:bg-white active:scale-90 transition-all">
+          <span class="material-symbols-outlined text-on-surface" style="font-size:20px;">remove</span>
         </button>
       </div>
-      <div id="results-container" class="grid grid-cols-1 gap-4"></div>
     </section>
 
-    <!-- Category Grid -->
-    <section class="pb-8">
-      <h2 class="font-headline text-xl font-extrabold tracking-tight mb-6">체험 카테고리</h2>
+    <!-- ── Popular Destinations ─────────────────── -->
+    <section class="px-6 pt-8 space-y-5">
+      <div class="flex justify-between items-center">
+        <h2 class="font-headline text-xl font-extrabold tracking-tight" id="section-title">인기 여행지</h2>
+        <button class="text-primary text-sm font-semibold hover:underline" id="see-all-btn">모두 보기</button>
+      </div>
+      <div id="cards-container" class="flex gap-5 overflow-x-auto hide-scrollbar -mx-6 px-6 pb-4"></div>
+    </section>
+
+    <!-- ── Category Grid ────────────────────────── -->
+    <section class="px-6 pt-8 pb-8">
+      <h2 class="font-headline text-xl font-extrabold tracking-tight mb-5" id="category-title">체험 카테고리</h2>
       <div class="grid grid-cols-2 gap-4">
-        <div class="bg-surface-container-low rounded-3xl p-6 flex flex-col justify-between h-40 hover:shadow-md transition-shadow cursor-pointer">
-          <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
+        <div class="bg-surface-container-low rounded-3xl p-6 flex flex-col justify-between h-36 hover:shadow-md transition-shadow cursor-pointer">
+          <div class="w-11 h-11 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
             <span class="material-symbols-outlined">restaurant</span>
           </div>
-          <span class="font-bold text-slate-800">맛집 탐방</span>
+          <span class="font-bold text-slate-800 text-sm" id="cat-food">맛집 탐방</span>
         </div>
-        <div class="bg-primary text-white rounded-3xl p-6 flex flex-col justify-between h-40 hover:shadow-md transition-shadow cursor-pointer">
-          <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shadow-sm">
+        <div class="bg-primary text-white rounded-3xl p-6 flex flex-col justify-between h-36 hover:shadow-md transition-shadow cursor-pointer">
+          <div class="w-11 h-11 bg-white/20 rounded-2xl flex items-center justify-center shadow-sm">
             <span class="material-symbols-outlined">hiking</span>
           </div>
-          <span class="font-bold">하이킹</span>
+          <span class="font-bold text-sm" id="cat-hike">하이킹</span>
         </div>
-        <div class="bg-tertiary-container rounded-3xl p-6 flex flex-col justify-between h-40 hover:shadow-md transition-shadow cursor-pointer">
-          <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-tertiary shadow-sm">
+        <div class="bg-tertiary-container rounded-3xl p-6 flex flex-col justify-between h-36 hover:shadow-md transition-shadow cursor-pointer">
+          <div class="w-11 h-11 bg-white rounded-2xl flex items-center justify-center text-tertiary shadow-sm">
             <span class="material-symbols-outlined">photo_camera</span>
           </div>
-          <span class="font-bold text-slate-800">사진 명소</span>
+          <span class="font-bold text-slate-800 text-sm" id="cat-photo">사진 명소</span>
         </div>
-        <div class="bg-surface-container-low rounded-3xl p-6 flex flex-col justify-between h-40 hover:shadow-md transition-shadow cursor-pointer">
-          <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
+        <div class="bg-surface-container-low rounded-3xl p-6 flex flex-col justify-between h-36 hover:shadow-md transition-shadow cursor-pointer">
+          <div class="w-11 h-11 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
             <span class="material-symbols-outlined">beach_access</span>
           </div>
-          <span class="font-bold text-slate-800">해변 휴양</span>
+          <span class="font-bold text-slate-800 text-sm" id="cat-beach">해변 휴양</span>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Bottom Navigation Bar -->
+  <!-- ── Bottom Nav ───────────────────────────── -->
   <nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-2xl rounded-t-[2rem] z-50 shadow-[0_-8px_24px_rgba(15,87,208,0.04)]">
-    <div class="flex flex-col items-center justify-center bg-blue-50 text-blue-700 rounded-2xl px-5 py-2 active:scale-90 transition-transform duration-150 cursor-pointer">
-      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
-      <span class="text-[11px] font-medium tracking-wide uppercase mt-1">홈</span>
+    <div class="flex flex-col items-center justify-center bg-blue-50 text-blue-700 rounded-2xl px-5 py-2 cursor-pointer">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">home</span>
+      <span class="text-[11px] font-medium tracking-wide uppercase mt-1" id="nav-home">홈</span>
     </div>
-    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors active:scale-90 duration-150 cursor-pointer">
+    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors cursor-pointer">
       <span class="material-symbols-outlined">explore</span>
-      <span class="text-[11px] font-medium tracking-wide uppercase mt-1">탐색</span>
+      <span class="text-[11px] font-medium tracking-wide uppercase mt-1" id="nav-explore">탐색</span>
     </div>
-    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors active:scale-90 duration-150 cursor-pointer">
+    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors cursor-pointer">
       <span class="material-symbols-outlined">luggage</span>
-      <span class="text-[11px] font-medium tracking-wide uppercase mt-1">여행</span>
+      <span class="text-[11px] font-medium tracking-wide uppercase mt-1" id="nav-trip">여행</span>
     </div>
-    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors active:scale-90 duration-150 cursor-pointer">
+    <div class="flex flex-col items-center justify-center text-slate-400 px-5 py-2 hover:text-blue-500 transition-colors cursor-pointer">
       <span class="material-symbols-outlined">person</span>
-      <span class="text-[11px] font-medium tracking-wide uppercase mt-1">프로필</span>
+      <span class="text-[11px] font-medium tracking-wide uppercase mt-1" id="nav-profile">프로필</span>
     </div>
   </nav>
 
-  <script>
-    // ============================================================
-    // Destination data
-    // ============================================================
-    const destinations = [
-      {
-        id: 1,
-        name: "도쿄",
-        nameEn: "Tokyo",
-        country: "일본",
-        countryEn: "Japan",
-        desc: "전통과 현대가 공존하는 매력적인 도시",
-        price: "₩ 650,000~",
-        img: "https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=600",
-        aliases: ["东京", "とうきょう", "토쿄", "동경", "tokio", "toquio"]
-      },
-      {
-        id: 2,
-        name: "파리",
-        nameEn: "Paris",
-        country: "프랑스",
-        countryEn: "France",
-        desc: "낭만과 예술의 도시, 에펠탑의 고향",
-        price: "₩ 1,200,000~",
-        img: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=600",
-        aliases: ["巴黎", "パリ", "빠리", "pari", "parigi", "париж"]
-      },
-      {
-        id: 3,
-        name: "발리",
-        nameEn: "Bali",
-        country: "인도네시아",
-        countryEn: "Indonesia",
-        desc: "열대 낙원과 힐링 여행의 성지",
-        price: "₩ 780,000~",
-        img: "https://images.unsplash.com/photo-1555993539-1732b0258235?w=600",
-        aliases: ["巴厘岛", "バリ", "바리", "bali island"]
-      },
-      {
-        id: 4,
-        name: "두바이",
-        nameEn: "Dubai",
-        country: "UAE",
-        countryEn: "UAE",
-        desc: "사막 위의 미래 도시, 화려한 럭셔리 여행",
-        price: "₩ 1,050,000~",
-        img: "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=600",
-        aliases: ["迪拜", "ドバイ", "두바히", "dubay", "дубай"]
-      },
-      {
-        id: 5,
-        name: "뉴욕",
-        nameEn: "New York",
-        country: "미국",
-        countryEn: "USA",
-        desc: "세계의 중심, 꿈의 도시",
-        price: "₩ 1,350,000~",
-        img: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600",
-        aliases: ["纽约", "ニューヨーク", "뉴요크", "nueva york", "нью-йорк"]
-      },
-      {
-        id: 6,
-        name: "런던",
-        nameEn: "London",
-        country: "영국",
-        countryEn: "UK",
-        desc: "역사와 문화가 살아 숨쉬는 도시",
-        price: "₩ 1,100,000~",
-        img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600",
-        aliases: ["伦敦", "ロンドン", "론던", "londres", "лондон"]
-      },
-      {
-        id: 7,
-        name: "방콕",
-        nameEn: "Bangkok",
-        country: "태국",
-        countryEn: "Thailand",
-        desc: "맛있는 음식과 화려한 사원의 도시",
-        price: "₩ 450,000~",
-        img: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600",
-        aliases: ["曼谷", "バンコク", "방콕", "krung thep"]
-      },
-      {
-        id: 8,
-        name: "로마",
-        nameEn: "Rome",
-        country: "이탈리아",
-        countryEn: "Italy",
-        desc: "영원한 도시, 고대 문명의 보고",
-        price: "₩ 1,050,000~",
-        img: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=600",
-        aliases: ["罗马", "ローマ", "roma", "рим"]
-      },
-      {
-        id: 9,
-        name: "시드니",
-        nameEn: "Sydney",
-        country: "호주",
-        countryEn: "Australia",
-        desc: "오페라 하우스와 해변의 도시",
-        price: "₩ 980,000~",
-        img: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=600",
-        aliases: ["悉尼", "シドニー", "씨드니"]
-      },
-      {
-        id: 10,
-        name: "바르셀로나",
-        nameEn: "Barcelona",
-        country: "스페인",
-        countryEn: "Spain",
-        desc: "가우디의 건축과 지중해의 만남",
-        price: "₩ 1,080,000~",
-        img: "https://images.unsplash.com/photo-1583422409516-2895a77efded?w=600",
-        aliases: ["巴塞罗那", "バルセロナ", "바르샐로나", "barcelone"]
-      },
-      {
-        id: 11,
-        name: "서울",
-        nameEn: "Seoul",
-        country: "대한민국",
-        countryEn: "South Korea",
-        desc: "K-컬처의 중심지, 전통과 미래의 조화",
-        price: "₩ 150,000~",
-        img: "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=600",
-        aliases: ["首尔", "ソウル", "소울", "сеул"]
-      },
-      {
-        id: 12,
-        name: "오사카",
-        nameEn: "Osaka",
-        country: "일본",
-        countryEn: "Japan",
-        desc: "먹거리 천국, 활기 넘치는 일본의 부엌",
-        price: "₩ 580,000~",
-        img: "https://images.unsplash.com/photo-1590559899731-a382839e5549?w=600",
-        aliases: ["大阪", "おおさか", "오사까"]
-      }
+<script>
+// ═══════════════════════════════════════════════
+// 1. Language configuration
+// ═══════════════════════════════════════════════
+const LANGUAGES = [
+  { code: 'ko', label: '한국어',  flag: '🇰🇷', nominatim: 'ko' },
+  { code: 'en', label: 'English', flag: '🇺🇸', nominatim: 'en' },
+  { code: 'ja', label: '日本語',  flag: '🇯🇵', nominatim: 'ja' },
+  { code: 'zh', label: '中文',    flag: '🇨🇳', nominatim: 'zh' },
+  { code: 'fr', label: 'Français',flag: '🇫🇷', nominatim: 'fr' },
+  { code: 'es', label: 'Español', flag: '🇪🇸', nominatim: 'es' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪', nominatim: 'de' },
+  { code: 'ru', label: 'Русский', flag: '🇷🇺', nominatim: 'ru' },
+];
+
+// UI text translations
+const UI_TEXT = {
+  ko: { title:'인기 여행지', category:'체험 카테고리', food:'맛집 탐방', hike:'하이킹', photo:'사진 명소', beach:'해변 휴양', placeholder:'도시나 장소를 검색하세요...', seeAll:'모두 보기', home:'홈', explore:'탐색', trip:'여행', profile:'프로필', noResult:'검색 결과 없음', loading:'검색 중...' },
+  en: { title:'Popular Destinations', category:'Experience Categories', food:'Food Tour', hike:'Hiking', photo:'Photo Spots', beach:'Beach Resort', placeholder:'Search cities or places...', seeAll:'See All', home:'Home', explore:'Explore', trip:'Trips', profile:'Profile', noResult:'No results', loading:'Searching...' },
+  ja: { title:'人気の旅行先', category:'体験カテゴリ', food:'グルメ巡り', hike:'ハイキング', photo:'撮影スポット', beach:'ビーチリゾート', placeholder:'都市や場所を検索...', seeAll:'すべて見る', home:'ホーム', explore:'探索', trip:'旅行', profile:'プロフィール', noResult:'結果なし', loading:'検索中...' },
+  zh: { title:'热门目的地', category:'体验类别', food:'美食探索', hike:'徒步旅行', photo:'摄影胜地', beach:'海滩度假', placeholder:'搜索城市或地点...', seeAll:'查看全部', home:'首页', explore:'探索', trip:'旅行', profile:'个人', noResult:'无结果', loading:'搜索中...' },
+  fr: { title:'Destinations populaires', category:'Catégories', food:'Gastronomie', hike:'Randonnée', photo:'Photos', beach:'Plage', placeholder:'Rechercher une ville...', seeAll:'Tout voir', home:'Accueil', explore:'Explorer', trip:'Voyage', profile:'Profil', noResult:'Aucun résultat', loading:'Recherche...' },
+  es: { title:'Destinos populares', category:'Categorías', food:'Gastronomía', hike:'Senderismo', photo:'Fotos', beach:'Playa', placeholder:'Buscar ciudad o lugar...', seeAll:'Ver todo', home:'Inicio', explore:'Explorar', trip:'Viaje', profile:'Perfil', noResult:'Sin resultados', loading:'Buscando...' },
+  de: { title:'Beliebte Reiseziele', category:'Kategorien', food:'Kulinarik', hike:'Wandern', photo:'Fotospots', beach:'Strand', placeholder:'Stadt oder Ort suchen...', seeAll:'Alle sehen', home:'Start', explore:'Erkunden', trip:'Reise', profile:'Profil', noResult:'Keine Ergebnisse', loading:'Suche...' },
+  ru: { title:'Популярные направления', category:'Категории', food:'Гастрономия', hike:'Пешие прогулки', photo:'Фототочки', beach:'Пляж', placeholder:'Поиск города или места...', seeAll:'Все', home:'Главная', explore:'Обзор', trip:'Поездка', profile:'Профиль', noResult:'Нет результатов', loading:'Поиск...' },
+};
+
+// ═══════════════════════════════════════════════
+// 2. Destination data
+// ═══════════════════════════════════════════════
+const DESTINATIONS = [
+  { id:1,  name:{ko:'도쿄',en:'Tokyo',ja:'東京',zh:'东京',fr:'Tokyo',es:'Tokio',de:'Tokio',ru:'Токио'}, country:{ko:'일본',en:'Japan',ja:'日本',zh:'日本',fr:'Japon',es:'Japón',de:'Japan',ru:'Япония'}, price:'₩ 650,000~', img:'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=600', lat:35.6762, lng:139.6503 },
+  { id:2,  name:{ko:'파리',en:'Paris',ja:'パリ',zh:'巴黎',fr:'Paris',es:'París',de:'Paris',ru:'Париж'}, country:{ko:'프랑스',en:'France',ja:'フランス',zh:'法国',fr:'France',es:'Francia',de:'Frankreich',ru:'Франция'}, price:'₩ 1,200,000~', img:'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=600', lat:48.8566, lng:2.3522 },
+  { id:3,  name:{ko:'발리',en:'Bali',ja:'バリ',zh:'巴厘岛',fr:'Bali',es:'Bali',de:'Bali',ru:'Бали'}, country:{ko:'인도네시아',en:'Indonesia',ja:'インドネシア',zh:'印度尼西亚',fr:'Indonésie',es:'Indonesia',de:'Indonesien',ru:'Индонезия'}, price:'₩ 780,000~', img:'https://images.unsplash.com/photo-1555993539-1732b0258235?w=600', lat:-8.4095, lng:115.1889 },
+  { id:4,  name:{ko:'두바이',en:'Dubai',ja:'ドバイ',zh:'迪拜',fr:'Dubaï',es:'Dubái',de:'Dubai',ru:'Дубай'}, country:{ko:'UAE',en:'UAE',ja:'UAE',zh:'阿联酋',fr:'ÉAU',es:'EAU',de:'VAE',ru:'ОАЭ'}, price:'₩ 1,050,000~', img:'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=600', lat:25.2048, lng:55.2708 },
+  { id:5,  name:{ko:'뉴욕',en:'New York',ja:'ニューヨーク',zh:'纽约',fr:'New York',es:'Nueva York',de:'New York',ru:'Нью-Йорк'}, country:{ko:'미국',en:'USA',ja:'アメリカ',zh:'美国',fr:'États-Unis',es:'EE.UU.',de:'USA',ru:'США'}, price:'₩ 1,350,000~', img:'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600', lat:40.7128, lng:-74.0060 },
+  { id:6,  name:{ko:'런던',en:'London',ja:'ロンドン',zh:'伦敦',fr:'Londres',es:'Londres',de:'London',ru:'Лондон'}, country:{ko:'영국',en:'UK',ja:'イギリス',zh:'英国',fr:'Royaume-Uni',es:'Reino Unido',de:'Großbritannien',ru:'Великобритания'}, price:'₩ 1,100,000~', img:'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600', lat:51.5074, lng:-0.1278 },
+];
+
+// Fuzzy search aliases (multilingual)
+const ALIASES = {
+  1: ['东京','とうきょう','토쿄','동경','tokio','toquio'],
+  2: ['パリ','빠리','pari','parigi','париж'],
+  3: ['バリ','바리','bali island'],
+  4: ['迪拜','ドバイ','두바히','dubay','дубай'],
+  5: ['纽约','ニューヨーク','뉴요크','nueva york','нью-йорк'],
+  6: ['伦敦','ロンドン','론던','londres','лондон'],
+};
+
+// ═══════════════════════════════════════════════
+// 3. State
+// ═══════════════════════════════════════════════
+let currentLang = 'ko';
+let map = null;
+let currentPopup = null;
+let searchDebounce = null;
+
+// ═══════════════════════════════════════════════
+// 4. MapLibre GL JS map init
+// ═══════════════════════════════════════════════
+function initMap() {
+  map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://tiles.openfreemap.org/styles/liberty',
+    center: [126.9780, 37.5665], // Seoul default
+    zoom: 4,
+    attributionControl: false,
+  });
+
+  map.on('load', () => {
+    setMapLanguage('ko');
+    renderCards();
+    addDestinationMarkers();
+  });
+
+  // Zoom buttons
+  document.getElementById('zoom-in').addEventListener('click', () => map.zoomIn({ duration: 250 }));
+  document.getElementById('zoom-out').addEventListener('click', () => map.zoomOut({ duration: 250 }));
+}
+
+// ═══════════════════════════════════════════════
+// 5. Language switching
+// ═══════════════════════════════════════════════
+function setMapLanguage(langCode) {
+  if (!map || !map.isStyleLoaded()) return;
+  const style = map.getStyle();
+  if (!style) return;
+
+  style.layers.forEach(layer => {
+    if (!layer.layout || !layer.layout['text-field']) return;
+    try {
+      map.setLayoutProperty(layer.id, 'text-field', [
+        'coalesce',
+        ['get', `name:${langCode}`],
+        ['get', 'name'],
+      ]);
+    } catch (e) { /* some layers may not support this */ }
+  });
+}
+
+function applyLanguage(langCode) {
+  currentLang = langCode;
+  const lang = LANGUAGES.find(l => l.code === langCode);
+  const t = UI_TEXT[langCode];
+
+  // Update nav badge & header label
+  document.getElementById('lang-label').textContent = lang.label;
+  document.getElementById('map-lang-badge').textContent = lang.label;
+
+  // Update UI text
+  document.getElementById('section-title').textContent = t.title;
+  document.getElementById('category-title').textContent = t.category;
+  document.getElementById('cat-food').textContent = t.food;
+  document.getElementById('cat-hike').textContent = t.hike;
+  document.getElementById('cat-photo').textContent = t.photo;
+  document.getElementById('cat-beach').textContent = t.beach;
+  document.getElementById('see-all-btn').textContent = t.seeAll;
+  document.getElementById('search-input').placeholder = t.placeholder;
+  document.getElementById('nav-home').textContent = t.home;
+  document.getElementById('nav-explore').textContent = t.explore;
+  document.getElementById('nav-trip').textContent = t.trip;
+  document.getElementById('nav-profile').textContent = t.profile;
+
+  // Highlight active language in panel
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.code === langCode);
+  });
+
+  // Update map labels
+  if (map && map.isStyleLoaded()) setMapLanguage(langCode);
+
+  // Re-render destination cards
+  renderCards();
+  hideLangPanel();
+}
+
+// ═══════════════════════════════════════════════
+// 6. Language panel
+// ═══════════════════════════════════════════════
+function buildLangPanel() {
+  const list = document.getElementById('lang-list');
+  list.innerHTML = LANGUAGES.map(l => `
+    <button class="lang-btn w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-container-low transition-colors text-left text-sm font-medium ${l.code === currentLang ? 'active' : ''}"
+      data-code="${l.code}">
+      <span class="text-lg">${l.flag}</span>
+      <span>${l.label}</span>
+    </button>
+  `).join('');
+  list.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => applyLanguage(btn.dataset.code));
+  });
+}
+
+function hideLangPanel() {
+  document.getElementById('lang-panel').classList.add('hidden');
+}
+
+document.getElementById('lang-toggle-btn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const panel = document.getElementById('lang-panel');
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden')) panel.classList.add('anim-in');
+});
+
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('lang-panel').contains(e.target) &&
+      e.target !== document.getElementById('lang-toggle-btn')) {
+    hideLangPanel();
+  }
+});
+
+// ═══════════════════════════════════════════════
+// 7. Destination cards
+// ═══════════════════════════════════════════════
+function renderCards() {
+  const container = document.getElementById('cards-container');
+  container.innerHTML = DESTINATIONS.map(d => `
+    <div class="flex-none w-[220px] group cursor-pointer anim-in" onclick="flyToDestination(${d.id})">
+      <div class="relative aspect-[3/4] rounded-[2rem] overflow-hidden shadow-lg">
+        <img alt="${d.name[currentLang]}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="${d.img}"/>
+        <div class="absolute top-3 right-3 bg-white/20 backdrop-blur-xl p-1.5 rounded-full text-white">
+          <span class="material-symbols-outlined" style="font-size:18px;">favorite</span>
+        </div>
+        <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+          <p class="text-[10px] text-white/70 font-bold uppercase tracking-widest">${d.country[currentLang]}</p>
+          <h4 class="font-bold text-white text-base">${d.name[currentLang]}</h4>
+          <span class="text-white/90 text-xs font-semibold">${d.price}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function flyToDestination(id) {
+  const d = DESTINATIONS.find(x => x.id === id);
+  if (!d || !map) return;
+  map.flyTo({ center: [d.lng, d.lat], zoom: 11, duration: 1800, essential: true });
+  showPopup(d.lng, d.lat, d.name[currentLang], d.country[currentLang]);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════════════
+// 8. Destination markers on map
+// ═══════════════════════════════════════════════
+function addDestinationMarkers() {
+  DESTINATIONS.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cursor-pointer';
+    el.innerHTML = `
+      <div class="bg-primary text-white px-2 py-1 rounded-lg text-xs font-bold shadow-lg hover:scale-110 transition-transform whitespace-nowrap" style="font-family:Inter,sans-serif;">
+        ✈ ${d.name[currentLang]}
+      </div>`;
+
+    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+      .setLngLat([d.lng, d.lat])
+      .addTo(map);
+
+    el.addEventListener('click', () => flyToDestination(d.id));
+  });
+}
+
+// ═══════════════════════════════════════════════
+// 9. Popup
+// ═══════════════════════════════════════════════
+function showPopup(lng, lat, name, country) {
+  if (currentPopup) currentPopup.remove();
+  currentPopup = new maplibregl.Popup({ closeButton: true, offset: 12 })
+    .setLngLat([lng, lat])
+    .setHTML(`
+      <div style="font-family:Inter,sans-serif;">
+        <p style="font-size:10px;color:#797a84;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 2px;">${country}</p>
+        <p style="font-size:16px;font-weight:800;color:#0f57d0;margin:0;">${name}</p>
+      </div>`)
+    .addTo(map);
+}
+
+// ═══════════════════════════════════════════════
+// 10. Levenshtein fuzzy search (for local data)
+// ═══════════════════════════════════════════════
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length:m+1}, (_,i) => Array.from({length:n+1}, (_,j) => i===0?j:j===0?i:0));
+  for (let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function localSearch(q) {
+  const lq = q.toLowerCase().trim();
+  return DESTINATIONS.map(d => {
+    const fields = [
+      ...Object.values(d.name).map(v=>v.toLowerCase()),
+      ...Object.values(d.country).map(v=>v.toLowerCase()),
+      ...(ALIASES[d.id]||[]).map(v=>v.toLowerCase()),
     ];
-
-    // ============================================================
-    // Fuzzy matching (Levenshtein distance)
-    // ============================================================
-    function levenshtein(a, b) {
-      const m = a.length, n = b.length;
-      if (m === 0) return n;
-      if (n === 0) return m;
-      const dp = Array.from({length: m + 1}, () => Array(n + 1).fill(0));
-      for (let i = 0; i <= m; i++) dp[i][0] = i;
-      for (let j = 0; j <= n; j++) dp[0][j] = j;
-      for (let i = 1; i <= m; i++) {
-        for (let j = 1; j <= n; j++) {
-          dp[i][j] = a[i-1] === b[j-1]
-            ? dp[i-1][j-1]
-            : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-        }
-      }
-      return dp[m][n];
+    let best = Infinity;
+    for (const f of fields) {
+      if (f===lq) { best=0; break; }
+      if (f.startsWith(lq)||lq.startsWith(f)) { best=Math.min(best,1); continue; }
+      if (f.includes(lq)||lq.includes(f)) { best=Math.min(best,2); continue; }
+      const d2 = levenshtein(lq,f);
+      if (d2 <= Math.max(lq.length,f.length)*0.45) best=Math.min(best,4+d2/Math.max(lq.length,f.length));
     }
+    return { dest:d, score:best };
+  }).filter(x=>x.score<Infinity).sort((a,b)=>a.score-b.score).map(x=>x.dest);
+}
 
-    function searchDestinations(query) {
-      if (!query || query.trim() === '') return [];
-      const q = query.toLowerCase().trim();
+// ═══════════════════════════════════════════════
+// 11. Nominatim geocoding search
+// ═══════════════════════════════════════════════
+async function nominatimSearch(q) {
+  const lang = LANGUAGES.find(l=>l.code===currentLang)?.nominatim || 'en';
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&accept-language=${lang}&addressdetails=1`;
+  try {
+    const res = await fetch(url, { headers: { 'Accept-Language': lang } });
+    return await res.json();
+  } catch { return []; }
+}
 
-      const scored = destinations.map(dest => {
-        const fields = [
-          dest.name.toLowerCase(),
-          dest.nameEn.toLowerCase(),
-          dest.country.toLowerCase(),
-          dest.countryEn.toLowerCase(),
-          ...dest.aliases.map(a => a.toLowerCase())
-        ];
+// ═══════════════════════════════════════════════
+// 12. Search UI
+// ═══════════════════════════════════════════════
+const searchInput = document.getElementById('search-input');
+const suggestionsEl = document.getElementById('suggestions');
+const clearBtn = document.getElementById('clear-btn');
 
-        let bestScore = Infinity;
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim();
+  clearBtn.classList.toggle('hidden', q.length === 0);
+  if (q.length === 0) { suggestionsEl.classList.add('hidden'); return; }
+  clearTimeout(searchDebounce);
+  // Show local results immediately
+  const localResults = localSearch(q);
+  renderSuggestions(localResults.map(d => ({
+    display: d.name[currentLang],
+    sub: d.country[currentLang],
+    lat: d.lat, lng: d.lng,
+    isLocal: true,
+  })), UI_TEXT[currentLang].loading);
 
-        for (const field of fields) {
-          // Exact match
-          if (field === q) { bestScore = 0; break; }
-          // Starts with
-          if (field.startsWith(q)) { bestScore = Math.min(bestScore, 1); continue; }
-          // Contains
-          if (field.includes(q)) { bestScore = Math.min(bestScore, 2); continue; }
-          // Query contains field
-          if (q.includes(field)) { bestScore = Math.min(bestScore, 3); continue; }
-          // Fuzzy: Levenshtein distance relative to length
-          const dist = levenshtein(q, field);
-          const threshold = Math.max(q.length, field.length) * 0.45;
-          if (dist <= threshold) {
-            bestScore = Math.min(bestScore, 4 + dist / Math.max(q.length, field.length));
-          }
-        }
-
-        return { dest, score: bestScore };
-      });
-
-      return scored
-        .filter(s => s.score < Infinity)
-        .sort((a, b) => a.score - b.score)
-        .map(s => s.dest);
-    }
-
-    // ============================================================
-    // Render functions
-    // ============================================================
-    function createCardHTML(dest) {
-      return `
-        <div class="flex-none w-[280px] space-y-4 group cursor-pointer search-highlight">
-          <div class="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-lg">
-            <img alt="${dest.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="${dest.img}"/>
-            <div class="absolute top-4 right-4 bg-white/20 backdrop-blur-xl p-2 rounded-full text-white hover:bg-white/40 transition-colors">
-              <span class="material-symbols-outlined">favorite</span>
-            </div>
-            <div class="absolute bottom-6 left-6 right-6 p-4 bg-white/90 backdrop-blur-md rounded-2xl flex justify-between items-center">
-              <div>
-                <p class="text-[10px] text-outline font-bold uppercase tracking-widest">${dest.country}</p>
-                <h4 class="font-bold text-slate-900 text-lg">${dest.name}</h4>
-              </div>
-              <div class="bg-blue-50 text-blue-700 px-3 py-1 rounded-xl font-bold text-sm whitespace-nowrap">
-                ${dest.price}
-              </div>
-            </div>
-          </div>
-        </div>`;
-    }
-
-    function createResultCardHTML(dest) {
-      return `
-        <div class="bg-surface-container-lowest rounded-3xl overflow-hidden shadow-[0px_12px_32px_rgba(15,87,208,0.04)] flex gap-4 p-4 hover:shadow-md transition-shadow cursor-pointer search-highlight">
-          <img alt="${dest.name}" class="w-24 h-24 rounded-2xl object-cover shrink-0" src="${dest.img}"/>
-          <div class="flex flex-col justify-center flex-1 min-w-0">
-            <p class="text-[10px] text-outline font-bold uppercase tracking-widest">${dest.country} · ${dest.countryEn}</p>
-            <h4 class="font-bold text-on-surface text-lg truncate">${dest.name} <span class="text-outline font-normal text-sm">${dest.nameEn}</span></h4>
-            <p class="text-on-surface-variant text-sm truncate">${dest.desc}</p>
-          </div>
-          <div class="flex items-center shrink-0">
-            <span class="text-primary font-bold text-sm whitespace-nowrap">${dest.price}</span>
-          </div>
-        </div>`;
-    }
-
-    function createSuggestionHTML(dest) {
-      return `
-        <div class="suggestion-item flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low cursor-pointer transition-colors" data-name="${dest.name}">
-          <span class="material-symbols-outlined text-primary text-lg">location_on</span>
-          <div class="flex-1 min-w-0">
-            <p class="font-medium text-on-surface text-sm truncate">${dest.name} <span class="text-outline">${dest.nameEn}</span></p>
-            <p class="text-xs text-outline truncate">${dest.country}</p>
-          </div>
-          <span class="text-xs text-primary font-semibold whitespace-nowrap">${dest.price}</span>
-        </div>`;
-    }
-
-    // ============================================================
-    // DOM & Events
-    // ============================================================
-    const cardsContainer = document.getElementById('cards-container');
-    const searchInput = document.getElementById('search-input');
-    const searchBtn = document.getElementById('search-btn');
-    const suggestionsEl = document.getElementById('search-suggestions');
-    const searchResults = document.getElementById('search-results');
-    const resultsContainer = document.getElementById('results-container');
-    const resultsTitle = document.getElementById('results-title');
-    const destinationsSection = document.getElementById('destinations-section');
-    const backBtn = document.getElementById('back-to-all');
-
-    // Render initial cards (first 6)
-    function renderInitialCards() {
-      const initial = destinations.slice(0, 6);
-      cardsContainer.innerHTML = initial.map(createCardHTML).join('');
-    }
-
-    // Show suggestions while typing
-    searchInput.addEventListener('input', () => {
-      const q = searchInput.value.trim();
-      if (q.length === 0) {
-        suggestionsEl.classList.add('hidden');
-        return;
-      }
-      const results = searchDestinations(q).slice(0, 5);
-      if (results.length === 0) {
-        suggestionsEl.innerHTML = `
-          <div class="px-4 py-3 text-sm text-outline text-center">검색 결과가 없습니다</div>`;
-      } else {
-        suggestionsEl.innerHTML = results.map(createSuggestionHTML).join('');
-      }
-      suggestionsEl.classList.remove('hidden');
-
-      // Attach click events to suggestions
-      suggestionsEl.querySelectorAll('.suggestion-item').forEach(item => {
-        item.addEventListener('click', () => {
-          searchInput.value = item.dataset.name;
-          suggestionsEl.classList.add('hidden');
-          performSearch(item.dataset.name);
-        });
-      });
+  // Then enrich with Nominatim
+  searchDebounce = setTimeout(async () => {
+    const geoResults = await nominatimSearch(q);
+    const items = geoResults.map(r => ({
+      display: r.display_name.split(',')[0],
+      sub: r.display_name.split(',').slice(1,3).join(',').trim(),
+      lat: parseFloat(r.lat),
+      lng: parseFloat(r.lon),
+      isLocal: false,
+    }));
+    // Merge: local first, then geo (deduplicate by proximity)
+    const merged = [...localResults.map(d => ({
+      display: d.name[currentLang], sub: d.country[currentLang],
+      lat: d.lat, lng: d.lng, isLocal: true,
+    }))];
+    items.forEach(item => {
+      const dupe = merged.some(m => Math.abs(m.lat-item.lat)<0.5 && Math.abs(m.lng-item.lng)<0.5);
+      if (!dupe) merged.push(item);
     });
+    renderSuggestions(merged.slice(0,8), null);
+  }, 400);
+});
 
-    // Close suggestions on outside click
-    document.addEventListener('click', (e) => {
-      if (!document.getElementById('search-container').contains(e.target)) {
-        suggestionsEl.classList.add('hidden');
-      }
-    });
+function renderSuggestions(items, loadingMsg) {
+  if (items.length === 0 && !loadingMsg) {
+    suggestionsEl.innerHTML = `<div class="px-4 py-3 text-sm text-outline text-center">${UI_TEXT[currentLang].noResult}</div>`;
+    suggestionsEl.classList.remove('hidden');
+    return;
+  }
+  let html = items.map((item, i) => `
+    <div class="search-result-item flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors border-b border-outline-variant/5 last:border-0"
+         data-lat="${item.lat}" data-lng="${item.lng}" data-name="${item.display}">
+      <span class="material-symbols-outlined text-primary shrink-0" style="font-size:18px;">${item.isLocal ? 'travel_explore' : 'location_on'}</span>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-on-surface text-sm truncate">${item.display}</p>
+        ${item.sub ? `<p class="text-xs text-outline truncate">${item.sub}</p>` : ''}
+      </div>
+    </div>`).join('');
+  if (loadingMsg) html += `<div class="px-4 py-2 text-xs text-outline text-center">${loadingMsg}</div>`;
+  suggestionsEl.innerHTML = html;
+  suggestionsEl.classList.remove('hidden');
+  suggestionsEl.classList.add('anim-in');
 
-    // Perform search
-    function performSearch(query) {
-      const results = searchDestinations(query);
-      if (results.length === 0) {
-        resultsTitle.textContent = `"${query}" 검색 결과 없음`;
-        resultsContainer.innerHTML = `
-          <div class="text-center py-12">
-            <span class="material-symbols-outlined text-6xl text-outline/30 mb-4 block">travel_explore</span>
-            <p class="text-outline text-sm">검색 결과가 없습니다. 다른 키워드로 검색해 보세요.</p>
-          </div>`;
-      } else {
-        resultsTitle.textContent = `"${query}" 검색 결과 (${results.length})`;
-        resultsContainer.innerHTML = results.map(createResultCardHTML).join('');
-      }
-      searchResults.classList.remove('hidden');
-      destinationsSection.classList.add('hidden');
+  suggestionsEl.querySelectorAll('.search-result-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const lat = parseFloat(el.dataset.lat);
+      const lng = parseFloat(el.dataset.lng);
+      const name = el.dataset.name;
+      map.flyTo({ center: [lng, lat], zoom: 12, duration: 1800, essential: true });
+      showPopup(lng, lat, name, '');
+      searchInput.value = name;
       suggestionsEl.classList.add('hidden');
-    }
-
-    searchBtn.addEventListener('click', () => {
-      if (searchInput.value.trim()) performSearch(searchInput.value.trim());
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+  });
+}
 
-    searchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && searchInput.value.trim()) {
-        performSearch(searchInput.value.trim());
-      }
-    });
+clearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  clearBtn.classList.add('hidden');
+  suggestionsEl.classList.add('hidden');
+  searchInput.focus();
+});
 
-    // Back to all
-    backBtn.addEventListener('click', () => {
-      searchResults.classList.add('hidden');
-      destinationsSection.classList.remove('hidden');
-      searchInput.value = '';
-    });
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('search-container').contains(e.target))
+    suggestionsEl.classList.add('hidden');
+});
 
-    // Init
-    renderInitialCards();
-  </script>
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape') suggestionsEl.classList.add('hidden');
+});
+
+// ═══════════════════════════════════════════════
+// 13. Init
+// ═══════════════════════════════════════════════
+buildLangPanel();
+initMap();
+</script>
 </body>
 </html>
