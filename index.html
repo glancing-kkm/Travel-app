@@ -166,60 +166,78 @@
 
     <!-- ════════ PAGE: 여행도구 ════════ -->
     <div id="page-tools" class="page" style="display:none;padding-bottom:100px">
-      <div style="padding:20px;display:flex;flex-direction:column;gap:20px">
+      <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
 
-        <!-- Weather -->
-        <div class="tool-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-size:16px;font-weight:800">🌤 여행지 날씨</div>
-            <div style="display:flex;gap:6px;align-items:center;background:#ededf6;border-radius:12px;padding:4px 12px">
-              <span class="ms" style="font-size:16px;color:#797a84">search</span>
-              <input id="weather-city" type="text" placeholder="도시 입력" style="border:none;background:transparent;font-size:13px;font-weight:600;width:80px;outline:none" onkeydown="if(event.key==='Enter')fetchWeather(this.value)"/>
-              <button onclick="fetchWeather(document.getElementById('weather-city').value)" style="border:none;background:none;cursor:pointer;color:#0f57d0;font-size:13px;font-weight:700">검색</button>
-            </div>
+        <!-- ① 통합 여행지 검색 -->
+        <div style="background:linear-gradient(135deg,#0f57d0,#4e83fe);border-radius:24px;padding:20px">
+          <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.75);margin-bottom:6px;letter-spacing:.05em">여행지를 검색하면 모든 정보가 자동으로 바뀌어요</div>
+          <div style="display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.15);border-radius:14px;padding:10px 14px">
+            <span class="ms" style="color:rgba(255,255,255,.8);font-size:20px">travel_explore</span>
+            <input id="tools-search" type="text" placeholder="도쿄, 파리, 발리, 뉴욕..." style="flex:1;border:none;background:transparent;font-size:15px;font-weight:600;color:white;outline:none" onkeydown="if(event.key==='Enter')searchToolsDest()" oninput="onToolsInput(this.value)"/>
+            <button onclick="searchToolsDest()" style="background:white;color:#0f57d0;border:none;border-radius:10px;padding:6px 12px;font-size:13px;font-weight:800;cursor:pointer">검색</button>
           </div>
-          <div id="weather-result" style="text-align:center;color:#797a84;font-size:13px">도시를 검색해 날씨를 확인하세요</div>
+          <!-- autocomplete -->
+          <div id="tools-ac" style="display:none;background:white;border-radius:12px;margin-top:8px;overflow:hidden;max-height:160px;overflow-y:auto"></div>
+          <!-- current dest badge -->
+          <div id="tools-dest-badge" style="display:none;margin-top:12px;background:rgba(255,255,255,.2);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="tools-dest-flag" style="font-size:22px">🌍</span>
+              <div>
+                <div id="tools-dest-name" style="font-size:14px;font-weight:800;color:white"></div>
+                <div id="tools-dest-sub" style="font-size:11px;color:rgba(255,255,255,.7)"></div>
+              </div>
+            </div>
+            <span class="ms" style="color:rgba(255,255,255,.6);font-size:18px">check_circle</span>
+          </div>
         </div>
 
-        <!-- Timezone -->
+        <!-- ② 날씨 -->
         <div class="tool-card">
-          <div style="font-size:16px;font-weight:800;margin-bottom:14px">🕐 시차 비교</div>
-          <div id="timezone-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
-          <div style="margin-top:12px;font-size:11px;color:#797a84;text-align:center" id="tz-update"></div>
+          <div style="font-size:15px;font-weight:800;margin-bottom:12px">🌤 날씨</div>
+          <div id="weather-result" style="text-align:center;color:#797a84;font-size:13px;padding:8px 0">여행지를 검색하면 현재 날씨를 보여드려요</div>
         </div>
 
-        <!-- Currency -->
+        <!-- ③ 시차 -->
         <div class="tool-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-size:16px;font-weight:800">💱 환율</div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:13px;color:#797a84">기준</span>
-              <select id="base-currency" onchange="fetchRates()" style="border:none;background:#ededf6;border-radius:8px;padding:4px 8px;font-size:13px;font-weight:700;color:#30323b;cursor:pointer">
-                <option>KRW</option><option>USD</option><option>EUR</option><option>JPY</option>
-              </select>
-            </div>
-          </div>
-          <div id="currency-input-wrap" style="display:flex;align-items:center;gap:8px;background:#ededf6;border-radius:14px;padding:10px 14px;margin-bottom:14px">
+          <div style="font-size:15px;font-weight:800;margin-bottom:12px">🕐 시차 비교</div>
+          <div id="timezone-result" style="color:#797a84;font-size:13px;text-align:center;padding:8px 0">여행지를 검색하면 시차를 보여드려요</div>
+          <div id="tz-update" style="margin-top:8px;font-size:11px;color:#b0b1bc;text-align:center"></div>
+        </div>
+
+        <!-- ④ 환율 -->
+        <div class="tool-card">
+          <div style="font-size:15px;font-weight:800;margin-bottom:12px">💱 환율</div>
+          <div id="currency-dest-info" style="display:none;margin-bottom:12px"></div>
+          <div style="display:flex;align-items:center;gap:8px;background:#ededf6;border-radius:14px;padding:10px 14px;margin-bottom:12px">
             <span id="base-symbol" style="font-size:18px;font-weight:800;color:#0f57d0">₩</span>
             <input id="currency-amount" type="number" value="10000" style="flex:1;border:none;background:transparent;font-size:18px;font-weight:700;outline:none" oninput="convertCurrency()"/>
+            <span style="font-size:12px;font-weight:700;color:#797a84">KRW</span>
           </div>
-          <div id="currency-result" style="display:flex;flex-direction:column;gap:8px"></div>
+          <div id="currency-result" style="display:flex;flex-direction:column;gap:8px">
+            <div style="color:#797a84;font-size:13px;text-align:center;padding:8px 0">여행지를 검색하면 환율을 보여드려요</div>
+          </div>
         </div>
 
-        <!-- Packing checklist -->
+        <!-- ⑤ 준비물 체크리스트 -->
         <div class="tool-card">
-          <div style="font-size:16px;font-weight:800;margin-bottom:14px">🧳 준비물 체크리스트</div>
+          <div style="font-size:15px;font-weight:800;margin-bottom:4px">🧳 준비물 체크리스트</div>
+          <div id="checklist-dest-tag" style="font-size:12px;color:#797a84;margin-bottom:14px">기본 준비물을 확인하세요. 여행지 검색 시 맞춤 준비물이 추가됩니다.</div>
           <div id="checklist-container"></div>
-          <button onclick="addCheckItem()" style="width:100%;margin-top:12px;padding:10px;background:#ededf6;border:none;border-radius:12px;font-size:13px;font-weight:700;color:#5d5f68;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-            <span class="ms" style="font-size:16px">add</span>항목 추가
+          <button onclick="addCheckItem()" style="width:100%;margin-top:10px;padding:10px;background:#ededf6;border:none;border-radius:12px;font-size:13px;font-weight:700;color:#5d5f68;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+            <span class="ms" style="font-size:16px">add</span>직접 추가
           </button>
         </div>
 
-        <!-- Travel tips -->
+        <!-- ⑥ 여행 주의사항 -->
         <div class="tool-card">
-          <div style="font-size:16px;font-weight:800;margin-bottom:14px">⚠️ 여행 주의사항</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="tips-filter"></div>
-          <div id="tips-content" style="display:flex;flex-direction:column;gap:10px"></div>
+          <div style="font-size:15px;font-weight:800;margin-bottom:4px">⚠️ 여행 주의사항</div>
+          <div id="tips-dest-tag" style="font-size:12px;color:#797a84;margin-bottom:14px">여행지를 검색하면 현지 맞춤 주의사항을 보여드려요</div>
+          <div id="tips-content" style="display:flex;flex-direction:column;gap:10px">
+            <div style="text-align:center;padding:20px;color:#b0b1bc;font-size:13px">
+              <span class="ms" style="font-size:36px;display:block;margin-bottom:8px">travel_explore</span>
+              여행지를 검색해주세요
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -366,21 +384,153 @@ const TRANSPORTS = [
   {id:'taxi',   label:'택시',    icon:'local_taxi',        speed:28},
 ];
 
-const TIMEZONES = [
-  {city:'서울',     tz:'Asia/Seoul',           flag:'🇰🇷'},
-  {city:'도쿄',     tz:'Asia/Tokyo',           flag:'🇯🇵'},
-  {city:'베이징',   tz:'Asia/Shanghai',        flag:'🇨🇳'},
-  {city:'방콕',     tz:'Asia/Bangkok',         flag:'🇹🇭'},
-  {city:'두바이',   tz:'Asia/Dubai',           flag:'🇦🇪'},
-  {city:'파리',     tz:'Europe/Paris',         flag:'🇫🇷'},
-  {city:'런던',     tz:'Europe/London',        flag:'🇬🇧'},
-  {city:'뉴욕',     tz:'America/New_York',     flag:'🇺🇸'},
-];
+// ── Country data: timezone / currency / packing / tips ──
+const COUNTRY_DATA = {
+  JP:{name:'일본',flag:'🇯🇵',tz:'Asia/Tokyo',tzCity:'도쿄',currency:'JPY',curSym:'¥',region:'동아시아',
+    essential:['교통카드 (Suica / ICOCA / PASMO)','현금 (소규모 식당·자판기 현금만 가능)','마스크','변환 플러그 (A타입)'],
+    recommended:['포켓와이파이 / 현지 유심','번역앱 (파파고·DeepL)','접이식 우산','에티켓 가이드 앱'],
+    tips:[
+      {icon:'🗑',title:'쓰레기통이 없어요',desc:'길거리 쓰레기통이 거의 없습니다. 편의점 봉투에 담아 두었다가 편의점에서 버리세요.'},
+      {icon:'💴',title:'현금 사회',desc:'소규모 식당, 신사·절 입장료, 자판기는 현금만 받는 경우가 많습니다. 최소 ¥10,000 정도는 현금으로 환전해 두세요.'},
+      {icon:'🚇',title:'전철 에티켓',desc:'전화 통화 금지, 큰 소리 금지. 우선석 근처에서는 핸드폰을 끄거나 무음으로 설정하세요.'},
+      {icon:'👟',title:'신발 벗기',desc:'전통 료칸·일부 식당에서는 신발을 벗어야 합니다. 깔끔한 양말을 여분으로 챙기세요.'},
+      {icon:'🤫',title:'조용한 공공장소',desc:'기차·버스·식당에서 큰 소리로 대화하면 시선을 받을 수 있습니다.'},
+      {icon:'🚭',title:'흡연 구역 엄격',desc:'길거리 흡연은 대부분 금지입니다. 지정된 흡연 구역을 이용하세요.'},
+    ]},
+  KR:{name:'한국',flag:'🇰🇷',tz:'Asia/Seoul',tzCity:'서울',currency:'KRW',curSym:'₩',region:'동아시아',
+    essential:['T머니 카드 (지하철·버스)','네이버지도 또는 카카오맵'],
+    recommended:['포켓와이파이','편한 운동화 (언덕 많음)'],
+    tips:[
+      {icon:'🚇',title:'지하철이 최고',desc:'서울 지하철은 세계적 수준입니다. T머니 카드 하나면 모든 교통수단 이용 가능합니다.'},
+      {icon:'🏪',title:'24시간 편의점',desc:'CU, GS25, 세븐일레븐이 도보 2분 거리에 있습니다. 현금 인출도 가능합니다.'},
+      {icon:'🍽',title:'반찬은 무료',desc:'식당에서 반찬은 추가 요금 없이 리필 가능한 경우가 많습니다.'},
+    ]},
+  FR:{name:'프랑스',flag:'🇫🇷',tz:'Europe/Paris',tzCity:'파리',currency:'EUR',curSym:'€',region:'유럽',
+    essential:['쉥겐 비자 또는 ETIAS 확인','여행자보험 증명서 (쉥겐 필수)','신용카드 (현금 대체)','동전 지갑 (화장실 유료)'],
+    recommended:['도난 방지 크로스백','편한 워킹화','유럽형 멀티어댑터 (C타입)','소형 자물쇠 (짐 보관용)'],
+    tips:[
+      {icon:'🧾',title:'소매치기 주의',desc:'에펠탑·루브르 등 관광지에서 집단 소매치기가 잦습니다. 가방은 앞으로 메세요.'},
+      {icon:'🚿',title:'화장실 유료',desc:'공중화장실 대부분 유료입니다. 동전(€0.50~€1)을 항상 준비하세요.'},
+      {icon:'💶',title:'팁 문화',desc:'레스토랑에서는 청구서의 10~15%를 팁으로 남기는 것이 예의입니다.'},
+      {icon:'🕐',title:'영업시간 주의',desc:'일요일에 문을 닫는 상점이 많습니다. 식료품점은 점심(12~14시)에 쉬기도 합니다.'},
+      {icon:'🗣',title:'프랑스어 인사',desc:'상점 입장 시 "Bonjour"(봉주르) 한마디면 현지인들이 훨씬 친절해집니다.'},
+    ]},
+  DE:{name:'독일',flag:'🇩🇪',tz:'Europe/Berlin',tzCity:'베를린',currency:'EUR',curSym:'€',region:'유럽',
+    essential:['쉥겐 비자 확인','여행자보험','신용카드 + 현금 (일부 가게 현금만)','유럽형 멀티어댑터'],
+    recommended:['편한 워킹화','도시철도 앱 (BVG/MVV)','도난방지 가방'],
+    tips:[
+      {icon:'🚦',title:'신호등 꼭 지키기',desc:'빨간불에 무단횡단하면 벌금이 부과될 수 있습니다. 독일인들은 신호를 철저히 지킵니다.'},
+      {icon:'💶',title:'현금 필요',desc:'독일은 유럽 중 현금 사용 비율이 높습니다. 소규모 식당·가게는 현금만 받기도 합니다.'},
+      {icon:'🛒',title:'일요일 휴무',desc:'대부분의 상점이 일요일에 문을 닫습니다. 필요한 물건은 토요일까지 구입하세요.'},
+    ]},
+  GB:{name:'영국',flag:'🇬🇧',tz:'Europe/London',tzCity:'런던',currency:'GBP',curSym:'£',region:'유럽',
+    essential:['전자여행허가 (ETA) 확인','여행자보험','신용카드','영국형 플러그 어댑터 (G타입)'],
+    recommended:['접이식 우산 (비가 잦음)','오이스터카드 또는 컨택리스 카드','편한 워킹화'],
+    tips:[
+      {icon:'🚇',title:'오이스터카드',desc:'런던 지하철·버스 이용 시 오이스터카드나 컨택리스 카드 사용이 훨씬 저렴합니다.'},
+      {icon:'☔',title:'날씨 변덕',desc:'런던 날씨는 하루에도 여러 번 바뀝니다. 우산과 얇은 레인코트를 꼭 챙기세요.'},
+      {icon:'🚗',title:'차는 왼쪽 통행',desc:'영국은 차가 왼쪽으로 달립니다. 횡단보도에서 먼저 오른쪽을 확인하세요.'},
+      {icon:'💷',title:'팁 문화',desc:'레스토랑에서 10~12.5% 팁이 청구서에 포함되기도 합니다. 확인 후 추가 팁 여부 결정하세요.'},
+    ]},
+  US:{name:'미국',flag:'🇺🇸',tz:'America/New_York',tzCity:'뉴욕',currency:'USD',curSym:'$',region:'미주',
+    essential:['ESTA 승인 출력본','여행자보험 (미국 의료비 매우 비쌈)','달러 현금 (팁 용도)','국제운전면허증 (렌터카 예정시)'],
+    recommended:['렌터카 예약 확인서','대용량 보조배터리','미국형 플러그 어댑터','구글맵 오프라인 저장'],
+    tips:[
+      {icon:'💵',title:'팁은 필수',desc:'레스토랑 15~20%, 택시 10~15%, 호텔 하우스키핑 $2~5/일. 팁 없이 나가면 무례한 행동으로 여겨집니다.'},
+      {icon:'🏥',title:'의료보험 필수',desc:'미국 의료비는 세계 최고 수준입니다. 충분한 의료 보장의 여행자보험이 꼭 필요합니다.'},
+      {icon:'🚗',title:'뉴욕 외엔 차가 필수',desc:'뉴욕·시카고 외 대부분 도시는 대중교통이 불편합니다. 렌터카를 미리 예약하세요.'},
+      {icon:'🆔',title:'신분증 항상 지참',desc:'술·담배 구매 시 ID 확인을 철저히 합니다. 여권이나 국제 신분증을 지참하세요.'},
+      {icon:'🔫',title:'치안 지역 확인',desc:'도시마다 치안이 나쁜 구역이 있습니다. 숙소 주변 안전 여부를 미리 확인하세요.'},
+    ]},
+  TH:{name:'태국',flag:'🇹🇭',tz:'Asia/Bangkok',tzCity:'방콕',currency:'THB',curSym:'฿',region:'동남아',
+    essential:['모기 기피제 (뎅기열·말라리아 주의)','지사제·소화제 (음식 탈 주의)','생수 여분 (수돗물 금지)','현금 바트화 (달러도 가능)'],
+    recommended:['얇은 긴팔 (에어컨 추위·사원 입장)','자외선차단제 (자외선 강함)','방수 샌들 (해변·우기)','여행자보험'],
+    tips:[
+      {icon:'💧',title:'물 조심',desc:'수돗물은 절대 마시지 마세요. 얼음도 위생적이지 않을 수 있으니 음식점 얼음에 주의하세요.'},
+      {icon:'🛕',title:'사원 복장 규정',desc:'왓프라깨우 등 유명 사원 입장 시 어깨·무릎이 가려진 복장이 필수입니다.'},
+      {icon:'🤴',title:'왕실 모독 금지',desc:'태국 왕실 비판은 범죄입니다. SNS 게시물에도 주의하세요.'},
+      {icon:'🦟',title:'모기 주의',desc:'뎅기열 등 모기 매개 질병이 있습니다. 기피제를 수시로 바르고 긴 옷을 챙기세요.'},
+      {icon:'🚕',title:'택시 미터기 확인',desc:'택시 탑승 시 미터기를 켜달라고 요청하세요. 거부하면 다른 택시를 이용하세요.'},
+    ]},
+  ID:{name:'인도네시아',flag:'🇮🇩',tz:'Asia/Jakarta',tzCity:'자카르타',currency:'IDR',curSym:'Rp',region:'동남아',
+    essential:['모기 기피제','지사제·소화제','생수','현금 루피아화','자외선차단제'],
+    recommended:['방수 가방','슬리퍼 (해변·사원용)','얇은 긴팔','수중 카메라 또는 방수 케이스'],
+    tips:[
+      {icon:'🌊',title:'해류 주의',desc:'발리 해변은 이안류가 강합니다. 빨간 깃발이 꽂힌 곳은 절대 수영 금지입니다.'},
+      {icon:'🛕',title:'사원 복장',desc:'힌두 사원 입장 시 사롱(허리 천)을 착용해야 합니다. 입구에서 대여 가능합니다.'},
+      {icon:'💧',title:'물 조심',desc:'수돗물은 마시지 마세요. 생수는 항상 봉인된 제품을 구입하세요.'},
+      {icon:'🤝',title:'협상 문화',desc:'시장에서는 가격 협상이 일반적입니다. 처음 부른 가격의 50~60% 정도로 협상을 시작하세요.'},
+    ]},
+  SG:{name:'싱가포르',flag:'🇸🇬',tz:'Asia/Singapore',tzCity:'싱가포르',currency:'SGD',curSym:'S$',region:'동남아',
+    essential:['신용카드','여행자보험','콘센트 어댑터 (G타입)'],
+    recommended:['이지링크 카드 (교통)','가벼운 우산','가이드북'],
+    tips:[
+      {icon:'🌿',title:'껌 반입 금지',desc:'싱가포르에 껌을 반입하거나 씹다 걸리면 벌금을 물 수 있습니다.'},
+      {icon:'🚭',title:'흡연 구역 엄격',desc:'지정 흡연 구역 외 흡연 시 S$1,000 이상 벌금입니다.'},
+      {icon:'🍜',title:'호커센터 추천',desc:'저렴하고 맛있는 현지 음식을 맛보려면 호커센터를 이용하세요. 1인분 S$3~5 수준입니다.'},
+      {icon:'🚇',title:'MRT 편리',desc:'싱가포르 지하철(MRT)은 매우 정확하고 깨끗합니다. 이지링크 카드를 구입하세요.'},
+    ]},
+  AU:{name:'호주',flag:'🇦🇺',tz:'Australia/Sydney',tzCity:'시드니',currency:'AUD',curSym:'A$',region:'오세아니아',
+    essential:['ETA(전자여행허가) 사전 발급','여행자보험','자외선차단제 SPF50+','신용카드'],
+    recommended:['편한 운동화·하이킹화','방충제','캐리어 자물쇠','현지 유심'],
+    tips:[
+      {icon:'☀️',title:'자외선 매우 강함',desc:'호주 자외선은 세계 최강 수준입니다. SPF50+ 선크림을 2시간마다 바르고 모자를 쓰세요.'},
+      {icon:'🐍',title:'야생동물 주의',desc:'부시워킹 시 뱀·독거미에 주의하세요. 풀숲에 함부로 손을 넣지 마세요.'},
+      {icon:'🏊',title:'해변 안전요원 구역에서만 수영',desc:'깃발 사이 구역에서만 수영하세요. 이안류가 매우 강합니다.'},
+      {icon:'💵',title:'팁 문화',desc:'호주는 팁 문화가 없습니다. 만족스러운 서비스에 자율적으로 주는 것은 괜찮습니다.'},
+    ]},
+  AE:{name:'UAE',flag:'🇦🇪',tz:'Asia/Dubai',tzCity:'두바이',currency:'AED',curSym:'د.إ',region:'중동',
+    essential:['긴팔·긴바지 (공공장소 복장 규정)','자외선차단제','여성용 스카프·숄','현금 디르함'],
+    recommended:['선글라스','물병 (더위 대비)','편한 걷기 신발','라마단 기간 확인'],
+    tips:[
+      {icon:'👗',title:'복장 규정',desc:'공공장소에서 어깨·무릎이 드러난 옷은 삼가세요. 사원 방문 시 전신을 가려야 합니다.'},
+      {icon:'🌙',title:'라마단 주의',desc:'라마단 기간 중 공공장소 취식·음주는 불법입니다. 여행 전 라마단 일정을 확인하세요.'},
+      {icon:'🤝',title:'공공 애정표현 금지',desc:'공공장소에서 포옹·키스 등은 법적으로 문제가 될 수 있습니다.'},
+      {icon:'📸',title:'촬영 주의',desc:'사람(특히 현지 여성)을 무단으로 촬영하면 법적 처벌을 받을 수 있습니다.'},
+      {icon:'🍺',title:'음주 제한',desc:'허가된 호텔·식당 외에서 음주는 금지입니다. 공공장소 음주는 체포될 수 있습니다.'},
+    ]},
+  CN:{name:'중국',flag:'🇨🇳',tz:'Asia/Shanghai',tzCity:'베이징',currency:'CNY',curSym:'¥',region:'동아시아',
+    essential:['중국 비자 사전 발급','VPN 앱 설치 (구글·카카오 차단)','위챗페이 또는 알리페이 계정','현금 위안화'],
+    recommended:['번역앱 (오프라인 가능)','대기오염 마스크','보조배터리'],
+    tips:[
+      {icon:'📱',title:'VPN 필수',desc:'구글, 유튜브, 카카오톡, 인스타그램이 차단됩니다. 입국 전에 반드시 VPN 앱을 설치하세요.'},
+      {icon:'💳',title:'현금 앱 결제',desc:'중국은 위챗페이·알리페이 결제가 대부분입니다. 외국인도 발급 가능하니 미리 준비하세요.'},
+      {icon:'😷',title:'대기오염',desc:'대도시 대기오염이 심한 날이 있습니다. 미세먼지 KF94 수준의 마스크를 준비하세요.'},
+      {icon:'🗺',title:'구글맵 안 됨',desc:'구글맵이 차단됩니다. 바이두지도 또는 카카오맵(일부 지원)을 이용하세요.'},
+    ]},
+  VN:{name:'베트남',flag:'🇻🇳',tz:'Asia/Ho_Chi_Minh',tzCity:'호치민',currency:'VND',curSym:'₫',region:'동남아',
+    essential:['모기 기피제','지사제·소화제','생수','현금 동화','자외선차단제'],
+    recommended:['그랩(Grab) 앱 설치','얇은 긴팔','방수 샌들','현지 유심'],
+    tips:[
+      {icon:'🛵',title:'오토바이 도로 건너기',desc:'무단횡단 시 오토바이 행렬을 만납니다. 천천히 일정한 속도로 걸어가면 오토바이가 피해갑니다.'},
+      {icon:'🍜',title:'길거리 음식 조심',desc:'맛있지만 위생 상태를 꼭 확인하세요. 익힌 음식 위주로 드시고 생야채는 주의하세요.'},
+      {icon:'💵',title:'그랩 앱 사용',desc:'택시 바가지요금이 잦습니다. 그랩(동남아 우버) 앱을 사용하면 정확한 요금으로 안전하게 이동할 수 있습니다.'},
+      {icon:'🤝',title:'가격 흥정',desc:'재래시장에서는 가격 흥정이 기본입니다. 처음 부른 가격의 절반 정도에서 시작해보세요.'},
+    ]},
+  IT:{name:'이탈리아',flag:'🇮🇹',tz:'Europe/Rome',tzCity:'로마',currency:'EUR',curSym:'€',region:'유럽',
+    essential:['여행자보험','신용카드','동전 지갑 (화장실 유료)','쉥겐 비자 확인'],
+    recommended:['편한 워킹화 (돌바닥 많음)','도난방지 크로스백','유럽형 어댑터 (C타입)','구겨지지 않는 여분 옷'],
+    tips:[
+      {icon:'🧾',title:'소매치기 극주의',desc:'콜로세움·트레비분수·바티칸 등에서 소매치기가 매우 많습니다. 현금과 여권은 나눠서 보관하세요.'},
+      {icon:'⛲',title:'분수 음용 가능',desc:'로마 거리 분수(나솔레)는 마실 수 있는 물입니다. 물병을 채워 다닐 수 있어요.'},
+      {icon:'🕐',title:'레스토랑 늦은 저녁',desc:'이탈리아 저녁 식사는 보통 20시 이후입니다. 너무 이른 시간에 가면 문을 닫았을 수 있습니다.'},
+      {icon:'💶',title:'커버차지',desc:'레스토랑에서 테이블당 "코페르토(pane e coperto)" 요금이 추가됩니다. 보통 €1~3 수준입니다.'},
+    ]},
+  ES:{name:'스페인',flag:'🇪🇸',tz:'Europe/Madrid',tzCity:'마드리드',currency:'EUR',curSym:'€',region:'유럽',
+    essential:['여행자보험','신용카드','쉥겐 비자 확인'],
+    recommended:['편한 워킹화','선글라스','자외선차단제','여름엔 부채'],
+    tips:[
+      {icon:'😴',title:'낮잠 시에스타',desc:'오후 2~5시에는 많은 상점이 문을 닫습니다. 이 시간엔 카페에서 쉬거나 낮잠을 즐기세요.'},
+      {icon:'🍽',title:'늦은 저녁 문화',desc:'스페인 저녁 식사는 21~22시가 일반적입니다. 너무 이른 시간에 레스토랑에 가면 비어 있습니다.'},
+      {icon:'🧾',title:'소매치기 주의',desc:'바르셀로나 람블라스 거리, 마드리드 지하철에서 소매치기가 많습니다.'},
+    ]},
+};
 
 const CURRENCY_META = {
   KRW:{sym:'₩',name:'원'},USD:{sym:'$',name:'달러'},EUR:{sym:'€',name:'유로'},
   JPY:{sym:'¥',name:'엔'},CNY:{sym:'¥',name:'위안'},GBP:{sym:'£',name:'파운드'},
-  THB:{sym:'฿',name:'바트'},AED:{sym:'د.إ',name:'디르함'},
+  THB:{sym:'฿',name:'바트'},AED:{sym:'د.إ',name:'디르함'},IDR:{sym:'Rp',name:'루피아'},
+  SGD:{sym:'S$',name:'싱가포르달러'},AUD:{sym:'A$',name:'호주달러'},VND:{sym:'₫',name:'동'},
 };
 
 const SHARED_ITINERARIES = [
@@ -477,7 +627,7 @@ function showPage(page){
   document.getElementById('fab').style.display=page==='home'?'flex':'none';
   S.currentPage=page;
   if(page==='map'||page==='home') setTimeout(()=>{if(map)map.resize();},100);
-  if(page==='tools'){ renderTimezones(); if(!Object.keys(S.rates).length)fetchRates(); renderChecklist(); renderTips('전체'); }
+  if(page==='tools'){ renderChecklist(); }
   if(page==='info'){ renderSharedList(); renderRooms('전체'); }
 }
 
@@ -776,106 +926,256 @@ function renderRooms(region){
 function createRoom(){ showToast('채팅방 생성 기능 준비중 🔧','construction'); }
 
 // ══════════════════════════════════════════════
-// 여행도구 PAGE
+// 여행도구: 통합 지역 연동
 // ══════════════════════════════════════════════
 
-// — Weather —
-async function fetchWeather(city){
-  if(!city.trim())return;
+let toolsDest = null;   // 현재 선택된 여행지
+let ratesCache = {};
+let tzTimer = null;
+
+// 공통 준비물 (항상 고정)
+const COMMON_ITEMS = [
+  {t:'여권 (유효기간 6개월 이상)',c:false},
+  {t:'비자 / ESTA / ETA (해당 시)',c:false},
+  {t:'항공권 예약 확인서',c:false},
+  {t:'숙소 예약 확인서',c:false},
+  {t:'여행자보험 증명서',c:false},
+  {t:'국제 신용카드',c:false},
+  {t:'현금 (현지 통화 또는 달러)',c:false},
+  {t:'스마트폰 + 충전기',c:false},
+  {t:'멀티 어댑터 / 변환 플러그',c:false},
+  {t:'보조배터리',c:false},
+  {t:'상비약 (소화제·진통제·지사제·밴드)',c:false},
+  {t:'세면도구 (칫솔·치약·샴푸)',c:false},
+  {t:'선크림 SPF30 이상',c:false},
+  {t:'마스크 여분',c:false},
+];
+
+// 사용자 추가 아이템 저장
+let userItems = [];
+
+// ── 검색 자동완성 ──
+let toolsAcTimer = null;
+function onToolsInput(q){
+  clearTimeout(toolsAcTimer);
+  document.getElementById('tools-ac').style.display='none';
+  if(q.length<2)return;
+  toolsAcTimer=setTimeout(async()=>{
+    const res=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&accept-language=ko&addressdetails=1`,{headers:{'Accept-Language':'ko'}}).then(r=>r.json()).catch(()=>[]);
+    if(!res.length)return;
+    const ac=document.getElementById('tools-ac');
+    ac.innerHTML=res.map(r=>{
+      const nm=r.display_name.split(',')[0];
+      const cc=(r.address?.country_code||'').toUpperCase();
+      const cd=COUNTRY_DATA[cc];
+      return `<div onclick='applyToolsDest(${JSON.stringify({nm,cc,lat:+r.lat,lng:+r.lon})})' style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid #f4f3fa;font-size:13px;font-weight:600" onmouseover="this.style.background='#f4f3fa'" onmouseout="this.style.background=''">${cd?`<span>${cd.flag}</span>`:'🌍'} <span>${nm}</span>${cd?`<span style="font-size:11px;color:#797a84;margin-left:auto">${cd.name}</span>`:''}</div>`;
+    }).join('');
+    ac.style.display='block';
+  },300);
+}
+
+async function searchToolsDest(){
+  const q=document.getElementById('tools-search').value.trim();
+  if(!q)return;
+  showToast('검색 중...','hourglass_empty');
+  const res=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&accept-language=ko&addressdetails=1`,{headers:{'Accept-Language':'ko'}}).then(r=>r.json()).catch(()=>[]);
+  if(!res.length){showToast('검색 결과가 없어요','search_off');return;}
+  const r=res[0];
+  applyToolsDest({nm:r.display_name.split(',')[0],cc:(r.address?.country_code||'').toUpperCase(),lat:+r.lat,lng:+r.lon});
+}
+
+function applyToolsDest({nm,cc,lat,lng}){
+  document.getElementById('tools-ac').style.display='none';
+  const cd=COUNTRY_DATA[cc];
+  toolsDest={name:nm,cc,lat,lng,cd};
+  // Update badge
+  const badge=document.getElementById('tools-dest-badge');
+  badge.style.display='flex';
+  document.getElementById('tools-dest-flag').textContent=cd?cd.flag:'🌍';
+  document.getElementById('tools-dest-name').textContent=nm;
+  document.getElementById('tools-dest-sub').textContent=cd?`${cd.name} · ${cd.region}`:'';
+  // Update all tools
+  updateWeather(nm);
+  updateTimezone(cd);
+  updateCurrencyForDest(cd);
+  updateChecklist(cd);
+  updateTips(cd);
+  showToast(`${cd?cd.flag:'🌍'} ${nm} 설정 완료`,'check_circle');
+}
+
+// ── 날씨 ──
+async function updateWeather(city){
   const el=document.getElementById('weather-result');
-  el.innerHTML=`<div style="color:#797a84;font-size:13px">불러오는 중...</div>`;
+  el.innerHTML=`<div style="color:#797a84;font-size:13px">날씨 불러오는 중...</div>`;
   try{
     const r=await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`).then(r=>r.json());
-    const c=r.current_condition[0], desc=c.lang_ko?.[0]?.value||c.weatherDesc[0].value;
-    const temp=c.temp_C, feels=c.FeelsLikeC, hum=c.humidity, wind=c.windspeedKmph;
-    el.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px">
-      <div style="font-size:48px;font-weight:800;color:#0f57d0">${temp}°</div>
-      <div style="text-align:left"><div style="font-size:14px;font-weight:700">${city}</div><div style="font-size:13px;color:#797a84">${desc}</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-      <div style="background:#ededf6;border-radius:12px;padding:10px;text-align:center"><div style="font-size:11px;color:#797a84">체감</div><div style="font-size:15px;font-weight:700">${feels}°</div></div>
-      <div style="background:#ededf6;border-radius:12px;padding:10px;text-align:center"><div style="font-size:11px;color:#797a84">습도</div><div style="font-size:15px;font-weight:700">${hum}%</div></div>
-      <div style="background:#ededf6;border-radius:12px;padding:10px;text-align:center"><div style="font-size:11px;color:#797a84">풍속</div><div style="font-size:15px;font-weight:700">${wind}km</div></div>
-    </div>`;
-  }catch{el.innerHTML=`<div style="color:#ef4444;font-size:13px">날씨 정보를 불러올 수 없습니다</div>`;}
+    const c=r.current_condition[0];
+    const desc=c.lang_ko?.[0]?.value||c.weatherDesc[0].value;
+    const wicons=['⛅','🌤','☀️','🌧','⛈','🌨','🌫','🌬'];
+    const wcode=parseInt(c.weatherCode)||113;
+    const wicon=wcode<=113?'☀️':wcode<=176?'🌤':wcode<=266?'🌧':wcode<=371?'🌨':'⛈';
+    el.innerHTML=`
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+        <div style="font-size:52px;line-height:1">${wicon}</div>
+        <div>
+          <div style="font-size:36px;font-weight:800;color:#0f57d0;line-height:1">${c.temp_C}°C</div>
+          <div style="font-size:13px;color:#5d5f68;font-weight:600;margin-top:2px">${desc}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div style="background:#ededf6;border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:#797a84;font-weight:600">체감</div><div style="font-size:15px;font-weight:800">${c.FeelsLikeC}°</div></div>
+        <div style="background:#ededf6;border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:#797a84;font-weight:600">습도</div><div style="font-size:15px;font-weight:800">${c.humidity}%</div></div>
+        <div style="background:#ededf6;border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:#797a84;font-weight:600">풍속</div><div style="font-size:15px;font-weight:800">${c.windspeedKmph}km</div></div>
+        <div style="background:#ededf6;border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:#797a84;font-weight:600">가시</div><div style="font-size:15px;font-weight:800">${c.visibility}km</div></div>
+      </div>`;
+  }catch{el.innerHTML=`<div style="color:#ef4444;font-size:13px;text-align:center">날씨 정보를 불러올 수 없습니다</div>`;}
 }
 
-// — Timezone —
-function renderTimezones(){
+// ── 시차 ──
+function getOffsetMin(tz){
   const now=new Date();
-  document.getElementById('timezone-grid').innerHTML=TIMEZONES.map(tz=>{
-    const time=new Intl.DateTimeFormat('ko-KR',{timeZone:tz.tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(now);
-    const date=new Intl.DateTimeFormat('ko-KR',{timeZone:tz.tz,month:'short',day:'numeric',weekday:'short'}).format(now);
-    const seoulOff=getOffset('Asia/Seoul'), tzOff=getOffset(tz.tz), diff=(tzOff-seoulOff)/60;
-    const diffStr=diff===0?'±0':(diff>0?'+':'')+diff+'h';
-    return `<div style="background:#ededf6;border-radius:16px;padding:12px;text-align:center">
-      <div style="font-size:20px;margin-bottom:2px">${tz.flag}</div>
-      <div style="font-size:12px;font-weight:700;color:#5d5f68">${tz.city}</div>
-      <div style="font-size:20px;font-weight:800;color:#0f57d0;margin:2px 0">${time}</div>
-      <div style="font-size:10px;color:#797a84">${date}</div>
-      <div style="font-size:11px;font-weight:700;color:${diff===0?'#797a84':diff>0?'#16a085':'#e67e22'};margin-top:2px">${diffStr}</div>
-    </div>`;
-  }).join('');
-  document.getElementById('tz-update').textContent='기준: 서울 시간 · '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  const utc=new Date(now.toLocaleString('en-US',{timeZone:'UTC'}));
+  const local=new Date(now.toLocaleString('en-US',{timeZone:tz}));
+  return (local-utc)/60000;
 }
-function getOffset(tz){ return new Date(new Date().toLocaleString('en-US',{timeZone:tz})) - new Date(new Date().toLocaleString('en-US',{timeZone:'UTC'})); }
+function renderSingleTimezone(cd){
+  clearInterval(tzTimer);
+  const el=document.getElementById('timezone-result');
+  function draw(){
+    const now=new Date();
+    const seoulOff=getOffsetMin('Asia/Seoul');
+    const destOff=getOffsetMin(cd.tz);
+    const diff=(destOff-seoulOff)/60;
+    const diffStr=diff===0?'±0시간':diff>0?`서울보다 ${diff}시간 빠름`:`서울보다 ${Math.abs(diff)}시간 느림`;
+    const seoulTime=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now);
+    const destTime=new Intl.DateTimeFormat('ko-KR',{timeZone:cd.tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now);
+    const destDate=new Intl.DateTimeFormat('ko-KR',{timeZone:cd.tz,month:'long',day:'numeric',weekday:'short'}).format(now);
+    el.innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center">
+        <div style="text-align:center;background:#ededf6;border-radius:16px;padding:14px">
+          <div style="font-size:11px;font-weight:700;color:#797a84;margin-bottom:4px">🇰🇷 서울</div>
+          <div style="font-size:22px;font-weight:800;color:#30323b;font-variant-numeric:tabular-nums">${seoulTime}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:11px;font-weight:700;color:#0f57d0;white-space:nowrap">${diff===0?'같은 시간':diff>0?`+${diff}h`:`${diff}h`}</div>
+          <div style="font-size:18px">→</div>
+        </div>
+        <div style="text-align:center;background:#e8f0fe;border-radius:16px;padding:14px;border:2px solid #0f57d0">
+          <div style="font-size:11px;font-weight:700;color:#0f57d0;margin-bottom:4px">${cd.flag} ${cd.tzCity}</div>
+          <div style="font-size:22px;font-weight:800;color:#0f57d0;font-variant-numeric:tabular-nums">${destTime}</div>
+          <div style="font-size:11px;color:#5d5f68;margin-top:4px">${destDate}</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;text-align:center;font-size:12px;font-weight:600;color:${diff===0?'#797a84':diff>0?'#16a085':'#e67e22'}">${diffStr}</div>`;
+    document.getElementById('tz-update').textContent='매초 자동 갱신 중';
+  }
+  draw();
+  tzTimer=setInterval(draw,1000);
+}
 
-// — Currency —
-let ratesCache={};
-async function fetchRates(){
-  const base=document.getElementById('base-currency').value;
-  S.ratesBase=base;
-  const syms={KRW:'₩',USD:'$',EUR:'€',JPY:'¥',CNY:'¥',GBP:'£',THB:'฿',AED:'د.إ'};
-  document.getElementById('base-symbol').textContent=syms[base]||base;
+// ── 환율 ──
+async function updateCurrencyForDest(cd){
+  if(!cd)return;
+  document.getElementById('base-symbol').textContent=cd.curSym;
+  // Show dest info
+  const infoEl=document.getElementById('currency-dest-info');
+  infoEl.style.display='flex';
+  infoEl.innerHTML=`<div style="display:flex;align-items:center;gap:8px;background:#e8f0fe;border-radius:12px;padding:8px 12px;font-size:13px"><span>${cd.flag}</span><span style="font-weight:700">${cd.name}</span><span style="color:#797a84">현지 통화:</span><span style="font-weight:800;color:#0f57d0">${cd.currency} (${cd.curSym})</span></div>`;
   try{
-    const targets=Object.keys(CURRENCY_META).filter(k=>k!==base).join(',');
-    const r=await fetch(`https://api.frankfurter.app/latest?from=${base}&to=${targets}`).then(r=>r.json());
-    ratesCache={...r.rates}; convertCurrency();
+    // KRW → dest currency + other major currencies
+    const targets=['USD','EUR','JPY','GBP','THB','CNY',cd.currency].filter((v,i,a)=>v!=='KRW'&&a.indexOf(v)===i).join(',');
+    const r=await fetch(`https://api.frankfurter.app/latest?from=KRW&to=${targets}`).then(r=>r.json());
+    ratesCache=r.rates||{};
+    convertCurrency(cd);
   }catch{document.getElementById('currency-result').innerHTML=`<div style="color:#ef4444;font-size:13px">환율 정보를 불러올 수 없습니다</div>`;}
 }
-function convertCurrency(){
+
+function convertCurrency(cd){
   const amt=+document.getElementById('currency-amount').value||0;
-  const base=S.ratesBase;
-  document.getElementById('currency-result').innerHTML=Object.entries(ratesCache).map(([code,rate])=>{
-    const m=CURRENCY_META[code]; if(!m)return '';
-    const val=(amt*rate).toLocaleString('ko-KR',{maximumFractionDigits:2});
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#ededf6;border-radius:14px">
-      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;font-weight:700">${m.sym}</span><span style="font-size:13px;color:#5d5f68">${m.name} (${code})</span></div>
-      <span style="font-size:15px;font-weight:800">${m.sym}${val}</span>
+  const CMETA={USD:{sym:'$',name:'달러'},EUR:{sym:'€',name:'유로'},JPY:{sym:'¥',name:'엔'},
+    GBP:{sym:'£',name:'파운드'},THB:{sym:'฿',name:'바트'},CNY:{sym:'¥',name:'위안'},
+    IDR:{sym:'Rp',name:'루피아'},SGD:{sym:'S$',name:'싱가포르달러'},AUD:{sym:'A$',name:'호주달러'},
+    VND:{sym:'₫',name:'동'},AED:{sym:'د.إ',name:'디르함'},
+  };
+  const destCd=cd||toolsDest?.cd;
+  const rows=Object.entries(ratesCache).map(([code,rate])=>{
+    const m=CMETA[code]||{sym:code,name:code};
+    const val=(amt*rate);
+    const formatted=val>=1000?val.toLocaleString('ko-KR',{maximumFractionDigits:0}):val.toLocaleString('ko-KR',{maximumFractionDigits:2});
+    const isMain=destCd&&code===destCd.currency;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:${isMain?'#e8f0fe':'#ededf6'};border-radius:14px;border:${isMain?'2px solid #0f57d0':'2px solid transparent'}">
+      <div style="display:flex;align-items:center;gap:8px">
+        ${isMain?`<span>${destCd.flag}</span>`:''}
+        <span style="font-size:14px;font-weight:700;color:${isMain?'#0f57d0':'#5d5f68'}">${m.name}</span>
+        <span style="font-size:11px;color:#797a84">${code}</span>
+        ${isMain?`<span style="font-size:10px;font-weight:700;background:#0f57d0;color:white;padding:1px 6px;border-radius:9999px">현지</span>`:''}
+      </div>
+      <span style="font-size:16px;font-weight:800;color:${isMain?'#0f57d0':'#30323b'}">${m.sym}${formatted}</span>
     </div>`;
   }).join('');
+  document.getElementById('currency-result').innerHTML=rows||`<div style="color:#797a84;font-size:13px;text-align:center">환율 정보 없음</div>`;
 }
 
-// — Checklist —
+// ── 체크리스트 ──
+let checkState={common:[...COMMON_ITEMS.map(i=>({...i}))],essential:[],recommended:[],custom:[]};
+
+function updateChecklist(cd){
+  checkState.essential=(cd?.essential||[]).map(t=>({t,c:false}));
+  checkState.recommended=(cd?.recommended||[]).map(t=>({t,c:false}));
+  const tag=document.getElementById('checklist-dest-tag');
+  if(cd) tag.innerHTML=`<span style="background:#e8f0fe;color:#0f57d0;padding:2px 10px;border-radius:9999px;font-size:12px;font-weight:700">${cd.flag} ${cd.name}</span> 맞춤 준비물이 추가되었습니다`;
+  else tag.textContent='기본 준비물을 확인하세요.';
+  renderChecklist();
+}
+
 function renderChecklist(){
-  document.getElementById('checklist-container').innerHTML=S.checklist.map((cat,ci)=>`
-    <div style="margin-bottom:16px">
-      <div style="font-size:13px;font-weight:700;color:#5d5f68;margin-bottom:8px">${cat.cat}</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        ${cat.items.map((item,ii)=>`
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 12px;border-radius:12px;background:${item.c?'#e8f0fe':'#ededf6'};transition:background .15s">
-            <input type="checkbox" ${item.c?'checked':''} onchange="toggleCheck(${ci},${ii},this.checked)" style="width:18px;height:18px;accent-color:#0f57d0"/>
-            <span style="font-size:13px;font-weight:600;color:${item.c?'#0f57d0':'#30323b'};${item.c?'text-decoration:line-through':''}">${item.t}</span>
+  const sections=[
+    {label:'📋 공통 필수품',sublabel:'어디를 가든 항상 챙겨야 해요',items:checkState.common,color:'#0f57d0',bg:'#e8f0fe',key:'common'},
+    ...(checkState.essential.length?[{label:'⭐ 현지 필수품',sublabel:'이 여행지에서 꼭 필요한 것들',items:checkState.essential,color:'#c0392b',bg:'#fde8e8',key:'essential'}]:[]),
+    ...(checkState.recommended.length?[{label:'👍 챙기면 좋은 것들',sublabel:'있으면 훨씬 편한 것들',items:checkState.recommended,color:'#16a085',bg:'#e0f5f2',key:'recommended'}]:[]),
+    ...(checkState.custom.length?[{label:'✏️ 직접 추가',sublabel:'내가 추가한 항목',items:checkState.custom,color:'#8e44ad',bg:'#f4e6fd',key:'custom'}]:[]),
+  ];
+  document.getElementById('checklist-container').innerHTML=sections.map(sec=>`
+    <div style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:800;color:${sec.color}">${sec.label}</div>
+          <div style="font-size:11px;color:#797a84">${sec.sublabel} · ${sec.items.filter(i=>i.c).length}/${sec.items.length} 완료</div>
+        </div>
+        <div style="width:40px;height:4px;background:#ededf6;border-radius:9999px;overflow:hidden">
+          <div style="height:100%;background:${sec.color};border-radius:9999px;width:${sec.items.length?sec.items.filter(i=>i.c).length/sec.items.length*100:0}%;transition:width .3s"></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        ${sec.items.map((item,ii)=>`
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:9px 12px;border-radius:12px;background:${item.c?sec.bg:'#f7f7f9'};transition:background .15s">
+            <input type="checkbox" ${item.c?'checked':''} onchange="toggleCheck('${sec.key}',${ii},this.checked)" style="width:18px;height:18px;accent-color:${sec.color};flex-shrink:0"/>
+            <span style="font-size:13px;font-weight:600;color:${item.c?sec.color:'#30323b'};${item.c?'text-decoration:line-through opacity:.6':''};flex:1">${item.t}</span>
           </label>`).join('')}
       </div>
     </div>`).join('');
 }
-function toggleCheck(ci,ii,val){ S.checklist[ci].items[ii].c=val; renderChecklist(); }
+
+function toggleCheck(key,ii,val){ checkState[key][ii].c=val; renderChecklist(); }
 function addCheckItem(){
   const name=prompt('추가할 항목을 입력하세요');
-  if(name?.trim()){ S.checklist[0].items.push({t:name.trim(),c:false}); renderChecklist(); }
+  if(name?.trim()){ checkState.custom.push({t:name.trim(),c:false}); renderChecklist(); }
 }
 
-// — Tips —
-const TIP_REGIONS=['전체','일본','동남아','유럽','미주'];
-function renderTips(region){
-  document.getElementById('tips-filter').innerHTML=TIP_REGIONS.map(r=>`
-    <button onclick="renderTips('${r}')" style="padding:6px 14px;border-radius:9999px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:${r===region?'#0f57d0':'#ededf6'};color:${r===region?'white':'#5d5f68'}">${r}</button>`).join('');
-  const tips=TIPS_DATA[region]||[];
-  document.getElementById('tips-content').innerHTML=tips.map(t=>`
-    <div style="display:flex;gap:12px;padding:14px;background:#ededf6;border-radius:16px">
-      <span style="font-size:22px;flex-shrink:0">${t.icon}</span>
-      <div><div style="font-size:14px;font-weight:700;margin-bottom:4px">${t.title}</div><div style="font-size:13px;color:#5d5f68;line-height:1.5">${t.desc}</div></div>
+// ── 주의사항 ──
+function updateTips(cd){
+  const destTag=document.getElementById('tips-dest-tag');
+  const el=document.getElementById('tips-content');
+  if(!cd||!cd.tips?.length){
+    destTag.textContent='여행지를 검색하면 현지 맞춤 주의사항을 보여드려요';
+    el.innerHTML=`<div style="text-align:center;padding:20px;color:#b0b1bc;font-size:13px"><span class="ms" style="font-size:36px;display:block;margin-bottom:8px">travel_explore</span>여행지를 검색해주세요</div>`;
+    return;
+  }
+  destTag.innerHTML=`<span style="background:#fde8e8;color:#c0392b;padding:2px 10px;border-radius:9999px;font-size:12px;font-weight:700">${cd.flag} ${cd.name}</span> 현지 맞춤 주의사항`;
+  el.innerHTML=cd.tips.map((t,i)=>`
+    <div class="fu" style="display:flex;gap:12px;padding:14px;background:#ededf6;border-radius:16px;animation-delay:${i*40}ms">
+      <span style="font-size:24px;flex-shrink:0;line-height:1.3">${t.icon}</span>
+      <div><div style="font-size:14px;font-weight:800;margin-bottom:4px">${t.title}</div><div style="font-size:13px;color:#5d5f68;line-height:1.6">${t.desc}</div></div>
     </div>`).join('');
 }
 
@@ -888,8 +1188,7 @@ function renderTips(region){
   buildCatBtns();
   renderTimeline();
   showPage('home');
-  // Timezone auto-refresh
-  setInterval(()=>{ if(S.currentPage==='tools')renderTimezones(); },30000);
+  // Timezone clock auto-refresh handled per-destination in renderSingleTimezone()
 })();
 </script>
 </body>
